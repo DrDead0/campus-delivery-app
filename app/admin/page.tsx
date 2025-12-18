@@ -109,6 +109,9 @@ export default async function AdminDashboard() {
               <Button variant="default" asChild className="rounded-lg">
                 <Link href="/admin/events">Manage events</Link>
               </Button>
+              <Button variant="default" asChild className="rounded-lg">
+                <Link href="/admin/stores">Manage stores</Link>
+              </Button>
               <div>
                 <VendingSyncClient />
               </div>

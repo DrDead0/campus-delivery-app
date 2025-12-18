@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ElementType } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,8 @@ interface DeliveryScreenProps {
     description: string;
     price: number;
     availability: "available" | "limited" | "unavailable";
-    emoji: string;
+    emoji?: string;
+    icon?: any;
     image?: string;
   }>;
   cartItems: Record<string, number>;
@@ -43,6 +44,12 @@ interface DeliveryScreenProps {
   setSelectedHostel: (hostel: string) => void;
   roomNumber: string;
   setRoomNumber: (room: string) => void;
+  store?: {
+    name: string;
+    image?: string;
+    description?: string;
+    location?: string;
+  };
 }
 
 export function DeliveryScreen({
@@ -55,6 +62,7 @@ export function DeliveryScreen({
   setSelectedHostel,
   roomNumber,
   setRoomNumber,
+  store,
 }: DeliveryScreenProps) {
   const { totalItems, totalPrice } = totals;
   const [searchQuery, setSearchQuery] = useState("");
@@ -87,50 +95,106 @@ export function DeliveryScreen({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-primary text-primary-foreground p-4 sticky top-0 z-10 shadow-md">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h1 className="text-2xl font-bold">SnackHub</h1>
-            <p className="text-xs opacity-80">Snacks delivered to your room</p>
-          </div>
-          <button
-            onClick={onProceedToCart}
-            className="relative cursor-pointer hover:scale-110 transition-transform"
-          >
-            <ShoppingCart
-              className={`w-6 h-6 ${totalItems > 0 ? "animate-pulse" : ""}`}
-            />
-            {totalItems > 0 && (
-              <span className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold animate-in zoom-in-50">
-                {totalItems}
-              </span>
+      {/* Header Logic: Store Header vs Default Header */}
+      {store ? (
+        // Store Header
+        <div className="bg-background sticky top-0 z-10 shadow-sm border-b">
+          <div className="relative h-48 w-full overflow-hidden">
+            {store.image ? (
+              <img
+                src={store.image}
+                alt={store.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-muted flex items-center justify-center text-4xl">
+                🏪
+              </div>
             )}
-          </button>
-        </div>
-
-        {/* Location Display */}
-        <div className="bg-primary-foreground/10 rounded-xl p-3 space-y-2 backdrop-blur-sm">
-          <div className="flex items-center gap-2 text-sm opacity-90">
-            <MapPin className="w-4 h-4" />
-            <span>Delivery Address</span>
+            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute bottom-4 left-4 text-white">
+              <h1 className="text-3xl font-bold">{store.name}</h1>
+              <p className="opacity-90 text-sm">{store.description}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="bg-green-600 px-1.5 rounded-sm text-xs font-bold flex items-center gap-0.5">
+                  4.2 <span>★</span>
+                </div>
+                <span className="text-xs opacity-80">
+                  • 25-30 mins • {store.location}
+                </span>
+              </div>
+            </div>
           </div>
-          {selectedHostel && roomNumber ? (
-            <p className="text-sm font-semibold animate-in fade-in-50 slide-in-from-top-2">
-              📍 Room {roomNumber}, {selectedHostel}
-            </p>
-          ) : (
-            <p className="text-sm text-white italic">Select address</p>
-          )}
-        </div>
-      </div>
 
-      {/* Ad Placeholder */}
-      <div className="bg-linear-to-r from-accent/20 to-primary/20 border border-border m-4 rounded-xl p-6 text-center shadow-sm">
-        <p className="text-sm font-medium">
-          Special Offer: Free delivery on orders above ₹100
-        </p>
-      </div>
+          {/* Cart & Back Button (Overlay or separate?) - For now let's keep cart consistent */}
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={onProceedToCart}
+              className="relative cursor-pointer hover:scale-110 transition-transform bg-white/20 p-2 rounded-full backdrop-blur-md"
+            >
+              <ShoppingCart
+                className={`w-6 h-6 text-white ${
+                  totalItems > 0 ? "animate-pulse" : ""
+                }`}
+              />
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      ) : (
+        // Default Header (SnackHub) - Only shown if NOT in store context
+        <div className="bg-primary text-primary-foreground p-4 sticky top-0 z-10 shadow-md">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h1 className="text-2xl font-bold">SnackHub</h1>
+              <p className="text-xs opacity-80">
+                Snacks delivered to your room
+              </p>
+            </div>
+            <button
+              onClick={onProceedToCart}
+              className="relative cursor-pointer hover:scale-110 transition-transform"
+            >
+              <ShoppingCart
+                className={`w-6 h-6 ${totalItems > 0 ? "animate-pulse" : ""}`}
+              />
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold animate-in zoom-in-50">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Location Display */}
+          <div className="bg-primary-foreground/10 rounded-xl p-3 space-y-2 backdrop-blur-sm">
+            <div className="flex items-center gap-2 text-sm opacity-90">
+              <MapPin className="w-4 h-4" />
+              <span>Delivery Address</span>
+            </div>
+            {selectedHostel && roomNumber ? (
+              <p className="text-sm font-semibold animate-in fade-in-50 slide-in-from-top-2">
+                📍 Room {roomNumber}, {selectedHostel}
+              </p>
+            ) : (
+              <p className="text-sm text-white italic">Select address</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Ad Placeholder (Show in both? Maybe only default?) */}
+      {!store && (
+        <div className="bg-linear-to-r from-accent/20 to-primary/20 border border-border m-4 rounded-xl p-6 text-center shadow-sm">
+          <p className="text-sm font-medium">
+            Special Offer: Free delivery on orders above ₹100
+          </p>
+        </div>
+      )}
 
       {/* Search and Filter Bar */}
       <div className="px-4 py-3 space-y-3">
@@ -138,7 +202,9 @@ export function DeliveryScreen({
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search snacks..."
+              placeholder={
+                store ? `Search in ${store.name}...` : "Search snacks..."
+              }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 rounded-xl border-2 border-border focus:border-primary"
@@ -373,6 +439,8 @@ export function DeliveryScreen({
                       alt={item.name}
                       className="w-full h-full object-cover"
                     />
+                  ) : item.icon ? (
+                    <item.icon className="w-10 h-10 text-primary" />
                   ) : (
                     <span>{item.emoji}</span>
                   )}

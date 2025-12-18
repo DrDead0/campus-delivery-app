@@ -19,4 +19,6 @@ const productSchema = new Schema(
 // Avoid OverwriteModelError in dev/HMR by reusing compiled model
 const Product =
   mongoose.models.Product || mongoose.model("Product", productSchema);
+
+export { productSchema };
 export default Product;

@@ -1,18 +1,18 @@
 import mongoose, { Schema } from "mongoose";
-import { vendingItemSchema } from "./vendingItem.model.js";
+import { storeItemSchema } from "./storeItem.model.js";
 
-const vendingMachineSchema = new Schema(
+const storeSchema = new Schema(
   {
     id: {
       type: String,
       required: true,
       unique: true,
     },
-    names: {
+    name: {
       type: String,
       required: true,
     },
-    building: {
+    description: {
       type: String,
       required: true,
     },
@@ -24,10 +24,9 @@ const vendingMachineSchema = new Schema(
       type: String,
       required: true,
     },
-    items: [vendingItemSchema],
+    items: [storeItemSchema],
   },
   { timestamps: true }
 );
 
-export default mongoose.models.VendingMachine ||
-  mongoose.model("VendingMachine", vendingMachineSchema);
+export default mongoose.models.Store || mongoose.model("Store", storeSchema);

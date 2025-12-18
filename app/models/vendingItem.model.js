@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { productSchema } from "./product.model.js";
 
 const vendingItemSchema = new Schema(
   {
@@ -24,6 +25,7 @@ const vendingItemSchema = new Schema(
       type: String,
       default: "🛍️",
     },
+    products: [productSchema],
   },
   { timestamps: true }
 );
