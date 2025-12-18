@@ -65,7 +65,7 @@ export default function Home() {
     );
   }, [stores, searchQuery]);
 
-  // Fetch stores from DB on mount
+  // Fetch stores and user profile from DB on mount
   useEffect(() => {
     const fetchStores = async () => {
       try {
@@ -85,7 +85,28 @@ export default function Home() {
         setLoading(false);
       }
     };
+
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const res = await fetch("/api/auth/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.address) {
+            setSelectedHostel(data.address);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+      }
+    };
+
     fetchStores();
+    fetchProfile();
   }, []);
 
   const updateQuantity = (itemId: string, change: number) => {
@@ -126,7 +147,7 @@ export default function Home() {
     // For now assuming items in cart belong to current store context or just price summing if we had a map.
     // Since we don't have a global price map easily here, we'll try to sum based on available delivery items + approximation.
     // Actually, let's create a temporary map from ALL stores for accuracy if possible.
-    let priceMap: Record<string, number> = {};
+    const priceMap: Record<string, number> = {};
     stores.forEach((s) => {
       s.items?.forEach((i: any) => {
         if (i.productId) {
@@ -204,7 +225,7 @@ export default function Home() {
                           >
                             {selectedHostel ? (
                               <span className="font-bold text-lg truncate">
-                                Room {roomNumber}, {selectedHostel}
+                                {roomNumber ? `Room ${roomNumber}, ` : ""}{selectedHostel}
                               </span>
                             ) : (
                               <span className="font-bold text-lg italic opacity-70">

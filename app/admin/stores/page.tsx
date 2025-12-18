@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import dbConnect from "@/app/db";
 import Store from "@/app/models/store.model";
+import "@/app/models/product.model"; // Ensure Product model is registered
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
