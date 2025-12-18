@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import dbConnect from "@/app/db";
 import Product from "@/app/models/product.model";
 import VendingMachine from "@/app/models/vendingMachine.model";
+import Store from "@/app/models/store.model";
 
 export async function createProductAction(formData: FormData) {
   try {
@@ -15,6 +16,9 @@ export async function createProductAction(formData: FormData) {
     const availability = String(formData.get("availability") || "inStock");
     const image = String(formData.get("image") || "").trim();
     const vendingMachines = String(formData.get("vendingMachines") || "")
+      .split(",")
+      .filter((id) => id.trim());
+    const stores = String(formData.get("stores") || "")
       .split(",")
       .filter((id) => id.trim());
 
@@ -51,10 +55,33 @@ export async function createProductAction(formData: FormData) {
       }
     }
 
+    // Add product to selected stores
+    if (stores.length > 0) {
+      for (const storeId of stores) {
+        const store = await Store.findById(storeId);
+        if (store) {
+          // Check if product already exists in this store
+          const existingItem = store.items.find(
+            (item: any) =>
+              item.productId &&
+              item.productId.toString() === product._id.toString()
+          );
+          if (!existingItem) {
+            store.items.push({
+              productId: product._id,
+              // Store specific defaults
+            });
+            await store.save();
+          }
+        }
+      }
+    }
+
     revalidatePath("/admin/products");
     revalidatePath("/admin");
     revalidatePath("/api/products");
     revalidatePath("/api/vending-machines");
+    revalidatePath("/api/stores");
     return { ok: true };
   } catch (err) {
     console.error("createProductAction error:", err);
@@ -73,6 +100,9 @@ export async function updateProductAction(formData: FormData) {
     const availability = String(formData.get("availability") || "inStock");
     const image = String(formData.get("image") || "").trim();
     const vendingMachines = String(formData.get("vendingMachines") || "")
+      .split(",")
+      .filter((id) => id.trim());
+    const stores = String(formData.get("stores") || "")
       .split(",")
       .filter((id) => id.trim());
 
@@ -103,10 +133,30 @@ export async function updateProductAction(formData: FormData) {
       }
     }
 
+    // Update product in selected stores
+    if (stores.length > 0) {
+      for (const storeId of stores) {
+        const store = await Store.findById(storeId);
+        if (store) {
+          // Check if product already exists in this store
+          const existingItem = store.items.find(
+            (item: any) => item.productId && item.productId.toString() === id
+          );
+          if (!existingItem) {
+            store.items.push({
+              productId: id,
+            });
+            await store.save();
+          }
+        }
+      }
+    }
+
     revalidatePath("/admin/products");
     revalidatePath("/admin");
     revalidatePath("/api/products");
     revalidatePath("/api/vending-machines");
+    revalidatePath("/api/stores");
     return { ok: true };
   } catch (err) {
     console.error("updateProductAction error:", err);

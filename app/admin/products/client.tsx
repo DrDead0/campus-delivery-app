@@ -22,7 +22,9 @@ import {
 interface ProductFormProps {
   product?: any;
   onClose: () => void;
+
   machines?: any[];
+  stores?: any[];
   onSave: (promise: Promise<any>) => void;
 }
 
@@ -30,28 +32,44 @@ function ProductForm({
   product,
   onClose,
   machines = [],
+  stores = [],
   onSave,
 }: ProductFormProps) {
   const [pending, startTransition] = useTransition();
   const [selectedMachines, setSelectedMachines] = useState<string[]>([]);
+  const [selectedStores, setSelectedStores] = useState<string[]>([]);
   const isEdit = !!product;
 
-  // Pre-populate selected machines when editing
+  // Pre-populate selected machines and stores
   useEffect(() => {
-    if (isEdit && product && machines.length > 0) {
-      const machinesWithProduct = machines
-        .filter((machine) =>
-          machine.items?.some(
-            (item: any) =>
-              item.productId && item.productId.toString() === product._id
+    if (isEdit && product) {
+      if (machines.length > 0) {
+        const machinesWithProduct = machines
+          .filter((machine) =>
+            machine.items?.some(
+              (item: any) =>
+                item.productId && item.productId.toString() === product._id
+            )
           )
-        )
-        .map((m) => m._id);
-      setSelectedMachines(machinesWithProduct);
+          .map((m) => m._id);
+        setSelectedMachines(machinesWithProduct);
+      }
+      if (stores.length > 0) {
+        const storesWithProduct = stores
+          .filter((store) =>
+            store.items?.some(
+              (item: any) =>
+                item.productId && item.productId.toString() === product._id
+            )
+          )
+          .map((s) => s._id);
+        setSelectedStores(storesWithProduct);
+      }
     } else {
       setSelectedMachines([]);
+      setSelectedStores([]);
     }
-  }, [isEdit, product, machines]);
+  }, [isEdit, product, machines, stores]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -139,11 +157,7 @@ function ProductForm({
       </div>
       {machines.length > 0 && (
         <div>
-          <Label>
-            {isEdit
-              ? "Update Vending Machines (Optional)"
-              : "Add to Vending Machines (Optional)"}
-          </Label>
+          <Label>Vending Machines</Label>
           <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-3">
             {machines.map((machine) => (
               <div key={machine._id} className="flex items-center space-x-2">
@@ -178,6 +192,40 @@ function ProductForm({
           />
         </div>
       )}
+
+      {stores.length > 0 && (
+        <div>
+          <Label>Stores</Label>
+          <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-3">
+            {stores.map((store) => (
+              <div key={store._id} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id={`store-${store._id}`}
+                  checked={selectedStores.includes(store._id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedStores([...selectedStores, store._id]);
+                    } else {
+                      setSelectedStores(
+                        selectedStores.filter((id) => id !== store._id)
+                      );
+                    }
+                  }}
+                  className="h-4 w-4"
+                />
+                <label
+                  htmlFor={`store-${store._id}`}
+                  className="text-sm cursor-pointer"
+                >
+                  {store.name} ({store.id})
+                </label>
+              </div>
+            ))}
+          </div>
+          <input type="hidden" name="stores" value={selectedStores.join(",")} />
+        </div>
+      )}
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onClose}>
           Cancel
@@ -193,9 +241,11 @@ function ProductForm({
 export function ProductsListClient({
   products,
   machines = [],
+  stores = [],
 }: {
   products: any[];
   machines?: any[];
+  stores?: any[];
 }) {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -295,6 +345,7 @@ export function ProductsListClient({
           <ProductForm
             product={editingProduct}
             machines={machines}
+            stores={stores}
             onSave={async (promise) => {
               setSaving(true);
               try {

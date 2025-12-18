@@ -7,7 +7,7 @@ export const hostels = [
   "Kalam Hostel",
   "Gandhi Hostel",
   "Vivekananda Hostel",
-]
+];
 
 export const deliveryItems = [
   {
@@ -106,7 +106,7 @@ export const deliveryItems = [
     availability: "available" as const,
     emoji: "⭐",
   },
-]
+];
 
 export const vendingMachines = [
   {
@@ -115,12 +115,48 @@ export const vendingMachines = [
     hostel: "Aryabhatta Hostel",
     location: "Ground Floor",
     items: [
-      { id: "v1", name: "Kurkure", price: 20, stock: "in-stock" as const, emoji: "🌶️" },
-      { id: "v2", name: "Coke", price: 40, stock: "in-stock" as const, emoji: "🥤" },
-      { id: "v3", name: "Lays Chips", price: 20, stock: "low" as const, emoji: "🥔" },
-      { id: "v4", name: "Kit Kat", price: 30, stock: "out" as const, emoji: "🍫" },
-      { id: "v5", name: "Parle-G", price: 10, stock: "in-stock" as const, emoji: "🍪" },
-      { id: "v6", name: "Oreo", price: 30, stock: "in-stock" as const, emoji: "🍪" },
+      {
+        id: "v1",
+        name: "Kurkure",
+        price: 20,
+        stock: "in-stock" as const,
+        emoji: "🌶️",
+      },
+      {
+        id: "v2",
+        name: "Coke",
+        price: 40,
+        stock: "in-stock" as const,
+        emoji: "🥤",
+      },
+      {
+        id: "v3",
+        name: "Lays Chips",
+        price: 20,
+        stock: "low" as const,
+        emoji: "🥔",
+      },
+      {
+        id: "v4",
+        name: "Kit Kat",
+        price: 30,
+        stock: "out" as const,
+        emoji: "🍫",
+      },
+      {
+        id: "v5",
+        name: "Parle-G",
+        price: 10,
+        stock: "in-stock" as const,
+        emoji: "🍪",
+      },
+      {
+        id: "v6",
+        name: "Oreo",
+        price: 30,
+        stock: "in-stock" as const,
+        emoji: "🍪",
+      },
     ],
   },
   {
@@ -129,12 +165,48 @@ export const vendingMachines = [
     hostel: "Chanakya Hostel",
     location: "First Floor",
     items: [
-      { id: "v7", name: "Pepsi", price: 40, stock: "in-stock" as const, emoji: "🥤" },
-      { id: "v8", name: "Uncle Chips", price: 20, stock: "in-stock" as const, emoji: "🍟" },
-      { id: "v9", name: "Dairy Milk", price: 50, stock: "low" as const, emoji: "🍫" },
-      { id: "v10", name: "Snickers", price: 40, stock: "in-stock" as const, emoji: "🥜" },
-      { id: "v11", name: "Frooti", price: 30, stock: "out" as const, emoji: "🧃" },
-      { id: "v12", name: "5 Star", price: 20, stock: "in-stock" as const, emoji: "⭐" },
+      {
+        id: "v7",
+        name: "Pepsi",
+        price: 40,
+        stock: "in-stock" as const,
+        emoji: "🥤",
+      },
+      {
+        id: "v8",
+        name: "Uncle Chips",
+        price: 20,
+        stock: "in-stock" as const,
+        emoji: "🍟",
+      },
+      {
+        id: "v9",
+        name: "Dairy Milk",
+        price: 50,
+        stock: "low" as const,
+        emoji: "🍫",
+      },
+      {
+        id: "v10",
+        name: "Snickers",
+        price: 40,
+        stock: "in-stock" as const,
+        emoji: "🥜",
+      },
+      {
+        id: "v11",
+        name: "Frooti",
+        price: 30,
+        stock: "out" as const,
+        emoji: "🧃",
+      },
+      {
+        id: "v12",
+        name: "5 Star",
+        price: 20,
+        stock: "in-stock" as const,
+        emoji: "⭐",
+      },
     ],
   },
   {
@@ -143,14 +215,44 @@ export const vendingMachines = [
     hostel: "Ramanujan Hostel",
     location: "Ground Floor Lobby",
     items: [
-      { id: "v13", name: "Mineral Water", price: 20, stock: "in-stock" as const, emoji: "💧" },
-      { id: "v14", name: "Red Bull", price: 120, stock: "low" as const, emoji: "🥫" },
-      { id: "v15", name: "Pringles", price: 90, stock: "in-stock" as const, emoji: "🥨" },
-      { id: "v16", name: "Bournvita Biscuits", price: 30, stock: "in-stock" as const, emoji: "🍪" },
-      { id: "v17", name: "Munch", price: 20, stock: "in-stock" as const, emoji: "🍫" },
+      {
+        id: "v13",
+        name: "Mineral Water",
+        price: 20,
+        stock: "in-stock" as const,
+        emoji: "💧",
+      },
+      {
+        id: "v14",
+        name: "Red Bull",
+        price: 120,
+        stock: "low" as const,
+        emoji: "🥫",
+      },
+      {
+        id: "v15",
+        name: "Pringles",
+        price: 90,
+        stock: "in-stock" as const,
+        emoji: "🥨",
+      },
+      {
+        id: "v16",
+        name: "Bournvita Biscuits",
+        price: 30,
+        stock: "in-stock" as const,
+        emoji: "🍪",
+      },
+      {
+        id: "v17",
+        name: "Munch",
+        price: 20,
+        stock: "in-stock" as const,
+        emoji: "🍫",
+      },
     ],
   },
-]
+];
 
 export const events = [
   {
@@ -198,4 +300,32 @@ export const events = [
     registrationLink: "https://forms.google.com/concert",
     emoji: "🎸",
   },
-]
+];
+
+export const categories = [
+  {
+    name: "Burgers",
+    image:
+      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+  },
+  {
+    name: "Pizza",
+    image:
+      "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+  },
+  {
+    name: "Biryani",
+    image:
+      "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+  },
+  {
+    name: "Rolls",
+    image:
+      "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=500&auto=format&fit=crop&q=60",
+  },
+  {
+    name: "Drinks",
+    image:
+      "https://images.unsplash.com/photo-1543573852-1a71a6ce19bc?w=500&auto=format&fit=crop&q=60",
+  },
+];
