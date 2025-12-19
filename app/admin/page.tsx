@@ -15,6 +15,7 @@ import VendingMachine from "@/app/models/vendingMachine.model";
 import Event from "@/app/models/events.model";
 import { VendingMachinesClient } from "./vending-machines-client";
 import { VendingSyncClient } from "./vending-sync-client";
+import { AutoRefresh } from "@/components/auto-refresh";
 
 async function getAuth() {
   const cookieStore = await cookies();
@@ -129,6 +130,7 @@ export default async function AdminDashboard() {
             </Button>
           </CardContent>
         </Card>
+        <AutoRefresh />
       </div>
     );
   } catch (err) {

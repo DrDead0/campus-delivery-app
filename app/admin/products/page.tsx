@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ProductsListClient } from "./client";
+import { AutoRefresh } from "@/components/auto-refresh";
 
 async function getAuth() {
   const cookieStore = await cookies();
@@ -74,6 +75,7 @@ export default async function ProductsAdminPage() {
             />
           </CardContent>
         </Card>
+        <AutoRefresh />
       </div>
     );
   } catch (err) {

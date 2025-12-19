@@ -7,6 +7,7 @@ import { EventsScreen } from "@/components/events-screen";
 import { BottomNav, type Screen } from "@/components/bottom-nav";
 import { CartScreen } from "@/components/cart-screen";
 import { StoreList } from "@/components/store-list";
+import { ProfileScreen } from "@/components/profile-screen";
 import { Button } from "@/components/ui/button";
 import { Search, MapPin, Mic, ShoppingCart } from "lucide-react";
 import {
@@ -69,12 +70,12 @@ export default function Home() {
   useEffect(() => {
     const fetchStores = async () => {
       try {
-        setLoading(true);
-        console.log("Fetching stores from /api/stores...");
+        // setLoading(true); // Don't set loading on poll to avoid flickering
+        // console.log("Fetching stores from /api/stores...");
         const res = await fetch("/api/stores");
         if (res.ok) {
           const data = await res.json();
-          console.log("Fetched stores:", data);
+          // console.log("Fetched stores:", data);
           setStores(data);
         } else {
           console.error("API returned status:", res.status);
@@ -105,11 +106,22 @@ export default function Home() {
       }
     };
 
-    fetchStores();
-    fetchProfile();
+    fetchStores(); // Initial fetch
+    fetchProfile(); // Initial fetch
+
+    const interval = setInterval(fetchStores, 5000); // Poll every 5s
+
+    return () => clearInterval(interval);
   }, []);
 
   const updateQuantity = (itemId: string, change: number) => {
+    // Only verify login when adding items (positive change)
+    if (change > 0 && !localStorage.getItem("token")) {
+      alert("Please login to order items.");
+      setActiveScreen("profile");
+      return;
+    }
+
     setCartItems((prev) => {
       const current = prev[itemId] || 0;
       const nextQty = Math.max(0, current + change);
@@ -193,7 +205,14 @@ export default function Home() {
                         variant="ghost"
                         size="icon"
                         className="text-primary-foreground hover:bg-white/20"
-                        onClick={() => setActiveScreen("cart")}
+                        onClick={() => {
+                          if (!localStorage.getItem("token")) {
+                            alert("Please login to view cart and order.");
+                            setActiveScreen("profile");
+                            return;
+                          }
+                          setActiveScreen("cart");
+                        }}
                       >
                         <div className="relative">
                           <ShoppingCart className="w-6 h-6" />
@@ -225,7 +244,8 @@ export default function Home() {
                           >
                             {selectedHostel ? (
                               <span className="font-bold text-lg truncate">
-                                {roomNumber ? `Room ${roomNumber}, ` : ""}{selectedHostel}
+                                {roomNumber ? `Room ${roomNumber}, ` : ""}
+                                {selectedHostel}
                               </span>
                             ) : (
                               <span className="font-bold text-lg italic opacity-70">
@@ -349,7 +369,14 @@ export default function Home() {
                     deliveryItems={deliveryItems}
                     cartItems={cartItems}
                     onUpdateQuantity={updateQuantity}
-                    onProceedToCart={() => setActiveScreen("cart")}
+                    onProceedToCart={() => {
+                      if (!localStorage.getItem("token")) {
+                        alert("Please login to order.");
+                        setActiveScreen("profile");
+                        return;
+                      }
+                      setActiveScreen("cart");
+                    }}
                     totals={totals}
                     selectedHostel={selectedHostel}
                     setSelectedHostel={setSelectedHostel}
@@ -375,6 +402,7 @@ export default function Home() {
               setRoomNumber={setRoomNumber}
             />
           )}
+          {activeScreen === "profile" && <ProfileScreen />}
 
           <BottomNav
             activeScreen={activeScreen}

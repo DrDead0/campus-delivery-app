@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { StoresListClient } from "./client";
+import { AutoRefresh } from "@/components/auto-refresh";
 
 async function getAuth() {
   const cookieStore = await cookies();
@@ -36,7 +37,9 @@ export default async function StoresAdminPage() {
       );
     }
 
-    const stores = await Store.find({}).populate({ path: 'items.productId', model: 'Product' }).lean();
+    const stores = await Store.find({})
+      .populate({ path: "items.productId", model: "Product" })
+      .lean();
     const serialized = JSON.parse(JSON.stringify(stores));
 
     return (
@@ -56,6 +59,7 @@ export default async function StoresAdminPage() {
             <StoresListClient stores={serialized} />
           </CardContent>
         </Card>
+        <AutoRefresh />
       </div>
     );
   } catch (err) {

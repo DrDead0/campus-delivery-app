@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import dbConnect from "@/app/db";
 import Event from "@/app/models/events.model";
 import { EventsListClient } from "./events-list-client";
+import { AutoRefresh } from "@/components/auto-refresh";
 
 async function getAuth() {
   const cookieStore = await cookies();
@@ -35,6 +36,7 @@ export default async function AdminEventsPage() {
         </div>
 
         <EventsListClient initialEvents={plainEvents} />
+        <AutoRefresh />
       </div>
     );
   } catch (err) {
