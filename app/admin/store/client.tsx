@@ -35,6 +35,7 @@ export function StoreDashboardClient({
   initialOrders: any[];
 }) {
   const [isEditStoreOpen, setIsEditStoreOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"orders" | "products">("orders");
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -89,11 +90,33 @@ export function StoreDashboardClient({
         </div>
       </section>
 
-      {/* Orders Section */}
-      <OrdersManager initialOrders={initialOrders} storeId={data.id || data._id} />
+      {/* Tab Navigation */}
+      <div className="flex items-center gap-2 border-b pb-2">
+        <Button
+          variant={activeTab === "orders" ? "default" : "ghost"}
+          onClick={() => setActiveTab("orders")}
+          className="gap-2"
+        >
+          Recent Orders
+        </Button>
+        <Button
+          variant={activeTab === "products" ? "default" : "ghost"}
+          onClick={() => setActiveTab("products")}
+          className="gap-2"
+        >
+          Products
+        </Button>
+      </div>
 
-      {/* Products Section */}
-      <ProductsManager data={data} type={type} />
+      {/* Content Areas */}
+      {activeTab === "orders" ? (
+        <OrdersManager
+          initialOrders={initialOrders}
+          storeId={data.id || data._id}
+        />
+      ) : (
+        <ProductsManager data={data} type={type} />
+      )}
 
       {/* Edit Details Dialog */}
       <Dialog open={isEditStoreOpen} onOpenChange={setIsEditStoreOpen}>
@@ -112,27 +135,33 @@ export function StoreDashboardClient({
   );
 }
 
-function OrdersManager({ initialOrders, storeId }: { initialOrders: any[], storeId: string }) {
+function OrdersManager({
+  initialOrders,
+  storeId,
+}: {
+  initialOrders: any[];
+  storeId: string;
+}) {
   const [orders, setOrders] = useState(initialOrders);
+  const [timeFilter, setTimeFilter] = useState("all");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+  const [sortBy, setSortBy] = useState("date-desc");
   const router = useRouter();
 
   // Polling for new orders
   useEffect(() => {
     const interval = setInterval(async () => {
-      // Re-fetch orders using server action if possible, or just refresh page data?
-      // Page refresh is heavy. Let's use a client-side fetch if we had an API, or server action.
-      // But we can't easily import 'getStoreOrders' here if it's not exposed as API? 
-      // It IS a server action, so we CAN import it!
       try {
         const { getStoreOrders } = await import("@/app/actions/order-actions");
         const latestOrders = await getStoreOrders(storeId);
 
-        setOrders(prev => {
-          // Check for new orders
+        setOrders((prev) => {
           if (latestOrders.length > prev.length) {
             const newCount = latestOrders.length - prev.length;
-            toast.info(`${newCount} new order(s) received!`, { duration: 5000 });
-            // Play sound? Browser policy might block.
+            toast.info(`${newCount} new order(s) received!`, {
+              duration: 5000,
+            });
           }
           return latestOrders;
         });
@@ -150,58 +179,166 @@ function OrdersManager({ initialOrders, storeId }: { initialOrders: any[], store
       toast.success(`Order marked as ${newStatus}`);
       router.refresh(); // Refresh server data
       // Optimistic update
-      setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+      setOrders((prev) =>
+        prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o))
+      );
     } else {
       toast.error("Failed to update status");
     }
   };
 
+  const filteredOrders = orders
+    .filter((order) => {
+      const orderDate = new Date(order.createdAt);
+
+      if (timeFilter === "custom") {
+        if (customStart && customEnd) {
+          const start = new Date(customStart); // Start of day
+          const end = new Date(customEnd);
+          end.setHours(23, 59, 59, 999); // End of day
+          return orderDate >= start && orderDate <= end;
+        }
+        return true; // Show all if dates not picked? Or none? all seems safer
+      }
+
+      if (timeFilter === "all") return true;
+
+      const now = new Date();
+      if (timeFilter === "today") {
+        return orderDate.toDateString() === now.toDateString();
+      }
+      if (timeFilter === "week") {
+        const weekAgo = new Date(now.setDate(now.getDate() - 7));
+        return orderDate >= weekAgo;
+      }
+      if (timeFilter === "month") {
+        const monthAgo = new Date(now.setMonth(now.getMonth() - 1));
+        return orderDate >= monthAgo;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === "date-desc") {
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      }
+      if (sortBy === "date-asc") {
+        return (
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+      }
+      if (sortBy === "price-desc") {
+        return b.totalAmount - a.totalAmount;
+      }
+      if (sortBy === "price-asc") {
+        return a.totalAmount - b.totalAmount;
+      }
+      return 0;
+    });
+
   return (
     <section className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
           <h3 className="text-xl font-semibold">Recent Orders</h3>
           <p className="text-sm text-gray-500">
             Manage incoming orders and update their status.
           </p>
         </div>
-        <Button variant="outline" onClick={() => router.refresh()} size="sm">Refresh</Button>
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <select
+            className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            value={timeFilter}
+            onChange={(e) => setTimeFilter(e.target.value)}
+          >
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="custom">Custom Range</option>
+          </select>
+
+          {timeFilter === "custom" && (
+            <div className="flex items-center gap-2 animate-in slide-in-from-left-2 fade-in">
+              <Input
+                type="date"
+                className="h-9 w-32"
+                value={customStart}
+                onChange={(e) => setCustomStart(e.target.value)}
+              />
+              <span className="text-gray-400">-</span>
+              <Input
+                type="date"
+                className="h-9 w-32"
+                value={customEnd}
+                onChange={(e) => setCustomEnd(e.target.value)}
+              />
+            </div>
+          )}
+          <select
+            className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="price-asc">Price: Low to High</option>
+          </select>
+          <Button variant="outline" onClick={() => router.refresh()} size="sm">
+            Refresh
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4">
-        {orders.length === 0 ? (
+        {filteredOrders.length === 0 ? (
           <div className="text-center py-8 text-gray-500 border border-dashed rounded-lg">
-            No orders found yet.
+            No orders found matching your filters.
           </div>
         ) : (
-          orders.map((order) => (
+          filteredOrders.map((order) => (
             <Card key={order._id} className="overflow-hidden">
               <CardContent className="p-4">
                 <div className="flex flex-col md:flex-row justify-between gap-4">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">#{order._id.slice(-6)}</span>
-                      <Badge variant={
-                        order.status === "DELIVERED" || order.status === "COMPLETED" ? "default" :
-                          order.status === "CANCELLED" ? "destructive" : "secondary"
-                      }>
+                      <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                        #{order._id.slice(-6)}
+                      </span>
+                      <Badge
+                        variant={
+                          order.status === "DELIVERED" ||
+                          order.status === "COMPLETED"
+                            ? "default"
+                            : order.status === "CANCELLED"
+                            ? "destructive"
+                            : "secondary"
+                        }
+                      >
                         {order.status}
                       </Badge>
-                      <span className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleString()}</span>
+                      <span
+                        className="text-sm text-gray-500"
+                        suppressHydrationWarning
+                      >
+                        {new Date(order.createdAt).toLocaleString()}
+                      </span>
                     </div>
                     {/* Items */}
                     <div className="space-y-1">
                       {order.items.map((item: any, idx: number) => (
                         <div key={idx} className="flex gap-2 text-sm">
-                          <span className="font-semibold">{item.quantity}x</span>
+                          <span className="font-semibold">
+                            {item.quantity}x
+                          </span>
                           <span>{item.name}</span>
                           <span className="text-gray-400">({item.source})</span>
                         </div>
                       ))}
                     </div>
-                    <div className="font-bold">
-                      Total: ₹{order.totalAmount}
-                    </div>
+                    <div className="font-bold">Total: ₹{order.totalAmount}</div>
                     {order.address && (
                       <div className="text-xs text-gray-500">
                         Deliver to: {order.address}
@@ -209,23 +346,45 @@ function OrdersManager({ initialOrders, storeId }: { initialOrders: any[], store
                     )}
                     {/* Helper to show user payment status if needed */}
                     <div className="text-xs">
-                      Payment: <span className={order.paymentStatus === "COMPLETED" ? "text-green-600" : "text-orange-600"}>{order.paymentStatus}</span>
+                      Payment:{" "}
+                      <span
+                        className={
+                          order.paymentStatus === "COMPLETED"
+                            ? "text-green-600"
+                            : "text-orange-600"
+                        }
+                      >
+                        {order.paymentStatus}
+                      </span>
                     </div>
                   </div>
 
                   <div className="flex flex-row md:flex-col gap-2 justify-center min-w-[120px]">
-                    {order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
-                      <>
-                        {order.status !== "PREPARING" && (
-                          <Button size="sm" onClick={() => handleStatusUpdate(order._id, "PREPARING")}>
-                            Prepare
+                    {order.status !== "DELIVERED" &&
+                      order.status !== "CANCELLED" && (
+                        <>
+                          {order.status !== "PREPARING" && (
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                handleStatusUpdate(order._id, "PREPARING")
+                              }
+                            >
+                              Prepare
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="bg-green-600 hover:bg-green-700"
+                            onClick={() =>
+                              handleStatusUpdate(order._id, "DELIVERED")
+                            }
+                          >
+                            Ready / Deliver
                           </Button>
-                        )}
-                        <Button size="sm" variant="default" className="bg-green-600 hover:bg-green-700" onClick={() => handleStatusUpdate(order._id, "DELIVERED")}>
-                          Ready / Deliver
-                        </Button>
-                      </>
-                    )}
+                        </>
+                      )}
                   </div>
                 </div>
               </CardContent>
@@ -439,12 +598,12 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
             image: newImage,
             productId: item.productId
               ? {
-                ...item.productId,
-                name: newName,
-                Description: newDesc,
-                price: newPrice,
-                image: newImage,
-              }
+                  ...item.productId,
+                  name: newName,
+                  Description: newDesc,
+                  price: newPrice,
+                  image: newImage,
+                }
               : undefined,
             availability:
               type === "store" ? newAvailability : item.availability,
@@ -568,18 +727,19 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
                         ) : (
                           <Badge
                             variant={isOutOfStock ? "destructive" : "secondary"}
-                            className={`capitalize text-[10px] h-5 px-1.5 ${!isOutOfStock && quantity <= 10
-                              ? "bg-orange-100 text-orange-700 hover:bg-orange-100"
-                              : !isOutOfStock
+                            className={`capitalize text-[10px] h-5 px-1.5 ${
+                              !isOutOfStock && quantity <= 10
+                                ? "bg-orange-100 text-orange-700 hover:bg-orange-100"
+                                : !isOutOfStock
                                 ? "bg-green-100 text-green-700 hover:bg-green-100"
                                 : ""
-                              }`}
+                            }`}
                           >
                             {isOutOfStock
                               ? "Out of Stock"
                               : quantity <= 10
-                                ? "Low Stock"
-                                : `In Stock: ${quantity}`}
+                              ? "Low Stock"
+                              : `In Stock: ${quantity}`}
                           </Badge>
                         )}
                       </div>
@@ -634,8 +794,8 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
                       isNew
                         ? "veg"
                         : editingItem.productId?.type ||
-                        editingItem.type ||
-                        "veg"
+                          editingItem.type ||
+                          "veg"
                     }
                   >
                     <option value="veg">Veg</option>
@@ -654,8 +814,8 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
                     isNew
                       ? ""
                       : editingItem.productId?.Description ||
-                      editingItem.description ||
-                      ""
+                        editingItem.description ||
+                        ""
                   }
                 />
               </div>
