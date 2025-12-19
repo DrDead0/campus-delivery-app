@@ -58,6 +58,13 @@ function DetailsForm({ data, type }: { data: any; type: string }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 5000); // Refresh every 5s
+    return () => clearInterval(interval);
+  }, [router]);
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
@@ -127,8 +134,6 @@ function DetailsForm({ data, type }: { data: any; type: string }) {
   );
 }
 
-
-
 function ProductsManager({ data, type }: { data: any; type: string }) {
   const [items, setItems] = useState<any[]>(data.items || []);
   const [editingItem, setEditingItem] = useState<any | null>(null);
@@ -170,21 +175,25 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
 
     // Optimistic Update
     const oldItems = [...items];
-    setItems((prev) => prev.map(item => {
-      if (item._id === editingItem._id) {
-        return {
-          ...item,
-          price: newPrice,
-          // Handle complex object vs flat field for name
-          name: newName,
-          // Optimistically update productId.name if it exists too, for display consistency
-          productId: item.productId ? { ...item.productId, name: newName, price: newPrice } : undefined,
-          availability: type === 'store' ? newStatus : item.availability,
-          stock: type !== 'store' ? newStatus : item.stock
-        };
-      }
-      return item;
-    }));
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item._id === editingItem._id) {
+          return {
+            ...item,
+            price: newPrice,
+            // Handle complex object vs flat field for name
+            name: newName,
+            // Optimistically update productId.name if it exists too, for display consistency
+            productId: item.productId
+              ? { ...item.productId, name: newName, price: newPrice }
+              : undefined,
+            availability: type === "store" ? newStatus : item.availability,
+            stock: type !== "store" ? newStatus : item.stock,
+          };
+        }
+        return item;
+      })
+    );
 
     setIsDialogOpen(false); // Close immediately for snappiness
 
@@ -232,7 +241,7 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
                   <Badge
                     variant={
                       item.availability === "inStock" ||
-                        item.stock === "in-stock"
+                      item.stock === "in-stock"
                         ? "default"
                         : "destructive"
                     }
@@ -265,7 +274,9 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
                   <Label>Name</Label>
                   <Input
                     name="name"
-                    defaultValue={editingItem.productId?.name || editingItem.name}
+                    defaultValue={
+                      editingItem.productId?.name || editingItem.name
+                    }
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">

@@ -1,8 +1,8 @@
 "use client";
 
-import { ShoppingCart, Coffee, Calendar, ShoppingBag } from "lucide-react";
+import { ShoppingCart, Coffee, Calendar, User } from "lucide-react";
 
-export type Screen = "delivery" | "vending" | "events" | "cart";
+export type Screen = "delivery" | "vending" | "events" | "profile" | "cart";
 
 interface BottomNavProps {
   activeScreen: Screen;
@@ -14,7 +14,7 @@ export function BottomNav({ activeScreen, onScreenChange }: BottomNavProps) {
     { id: "delivery" as const, label: "Delivery", icon: ShoppingCart },
     { id: "vending" as const, label: "Vending", icon: Coffee },
     { id: "events" as const, label: "Events", icon: Calendar },
-    { id: "cart" as const, label: "Cart", icon: ShoppingBag },
+    { id: "profile" as const, label: "Profile", icon: User },
   ];
 
   return (

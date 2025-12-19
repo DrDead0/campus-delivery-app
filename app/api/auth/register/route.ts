@@ -1,8 +1,8 @@
-import { NextResponse, type NextRequest } from 'next/server';
-import dbConnect from '@/app/db';
-import User from '@/app/models/user.model';
-import bcrypt from 'bcrypt';
-import { signToken } from '@/app/utils/jwt';
+import { NextResponse, type NextRequest } from "next/server";
+import dbConnect from "@/app/db";
+import User from "@/app/models/user.model";
+import bcrypt from "bcryptjs";
+import { signToken } from "@/app/utils/jwt";
 
 export async function POST(request: NextRequest) {
     try {
@@ -15,12 +15,15 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "All fields are required" }, { status: 400 });
         }
 
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return NextResponse.json({ error: 'User already exists' }, { status: 409 });
-        }
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "User already exists" },
+        { status: 409 }
+      );
+    }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = await User.create({
             email,
@@ -31,10 +34,10 @@ export async function POST(request: NextRequest) {
             roomNumber
         });
 
-        const token = signToken({ id: newUser._id, email: newUser.email });
-        return NextResponse.json({ token }, { status: 201 });
-    } catch (err) {
-        console.error('Registration error:', err);
-        return NextResponse.json({ error: 'Server error' }, { status: 500 });
-    }
+    const token = signToken({ id: newUser._id, email: newUser.email });
+    return NextResponse.json({ token }, { status: 201 });
+  } catch (err) {
+    console.error("Registration error:", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
 }
