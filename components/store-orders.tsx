@@ -21,6 +21,25 @@ import {
 import { CheckCircle, Clock, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { settleOrders } from "@/app/actions/order-actions";
+import { Download } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 interface StoreOrderProps {
     orders: any[];
@@ -29,6 +48,29 @@ interface StoreOrderProps {
 
 export function StoreOrders({ orders, storeId }: StoreOrderProps) {
     const [loading, setLoading] = useState(false);
+    const [downloadOpen, setDownloadOpen] = useState(false);
+    const [range, setRange] = useState("today");
+    const [customStart, setCustomStart] = useState("");
+    const [customEnd, setCustomEnd] = useState("");
+
+    const handleDownload = () => {
+        const params = new URLSearchParams();
+        params.set("sourceType", "STORE");
+        params.set("sourceId", storeId);
+        params.set("range", range);
+        if (range === "custom") {
+            if (!customStart || !customEnd) {
+                toast.error("Please select start and end dates");
+                return;
+            }
+            params.set("startDate", customStart);
+            params.set("endDate", customEnd);
+        }
+
+        const url = `/api/admin/reports/sales?${params.toString()}`;
+        window.open(url, "_blank");
+        setDownloadOpen(false);
+    };
 
     const pendingOrders = orders.filter(
         (o) =>
@@ -47,9 +89,59 @@ export function StoreOrders({ orders, storeId }: StoreOrderProps) {
     return (
         <div className="space-y-4">
             <Card>
-                <CardHeader>
-                    <CardTitle>Recent Orders</CardTitle>
-                    <CardDescription>Orders containing items from this store</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>Recent Orders</CardTitle>
+                        <CardDescription>Orders containing items from this store</CardDescription>
+                    </div>
+
+                    <Dialog open={downloadOpen} onOpenChange={setDownloadOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="gap-2">
+                                <Download className="w-4 h-4" /> Download Report
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Download Sales Report</DialogTitle>
+                                <DialogDescription>Select date range for this store's sales report.</DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                    <Label>Date Range</Label>
+                                    <Select value={range} onValueChange={setRange}>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="today">Today</SelectItem>
+                                            <SelectItem value="yesterday">Yesterday</SelectItem>
+                                            <SelectItem value="2days">Last 2 Days</SelectItem>
+                                            <SelectItem value="week">This Week</SelectItem>
+                                            <SelectItem value="month">This Month</SelectItem>
+                                            <SelectItem value="custom">Custom Range</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                {range === "custom" && (
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Start Date</Label>
+                                            <Input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>End Date</Label>
+                                            <Input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <DialogFooter>
+                                <Button variant="outline" onClick={() => setDownloadOpen(false)}>Cancel</Button>
+                                <Button onClick={handleDownload}>Download</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </CardHeader>
                 <CardContent>
                     <Table>

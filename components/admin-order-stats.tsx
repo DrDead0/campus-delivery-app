@@ -4,9 +4,26 @@ import { settleOrders } from "@/app/actions/order-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
 import { useState } from "react";
-import { Loader2, CheckCircle, Download } from "lucide-react";
+import { Loader2, CheckCircle, Download, Calendar as CalendarIcon } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 interface StatItem {
     _id: string; // sourceId
@@ -24,6 +41,13 @@ interface AdminOrderStatsProps {
 }
 
 export function AdminOrderStats({ stats }: AdminOrderStatsProps) {
+    const [downloadOpen, setDownloadOpen] = useState(false);
+    const [reportType, setReportType] = useState("sales");
+    const [sourceType, setSourceType] = useState("ALL"); // ALL, STORE, VENDING
+    const [sourceId, setSourceId] = useState("");
+    const [range, setRange] = useState("today");
+    const [customStart, setCustomStart] = useState("");
+    const [customEnd, setCustomEnd] = useState("");
     const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
 
     const handleSettle = async (sourceId: string, name: string) => {
@@ -34,7 +58,6 @@ export function AdminOrderStats({ stats }: AdminOrderStatsProps) {
             const res = await settleOrders(sourceId);
             if (res.success) {
                 toast.success(`Settled orders for ${name}!`);
-                // Refresh to show updated data
                 window.location.reload();
             } else {
                 toast.error("Failed to settle: " + res.error);
@@ -47,33 +70,26 @@ export function AdminOrderStats({ stats }: AdminOrderStatsProps) {
         }
     };
 
-    const handleExport = () => {
-        const rows: any[] = [];
+    const handleDownload = () => {
+        const params = new URLSearchParams();
+        params.set("range", range);
+        if (range === "custom") {
+            if (!customStart || !customEnd) {
+                toast.error("Please select start and end dates");
+                return;
+            }
+            params.set("startDate", customStart);
+            params.set("endDate", customEnd);
+        }
 
-        stats.storeStats.forEach((s) => {
-            rows.push({
-                Type: "Store",
-                Name: s.name,
-                "Total Revenue": s.totalRevenue,
-                "Settled Amount": s.settledAmount,
-                "Unsettled (Pending)": s.unsettledAmount
-            });
-        });
+        if (sourceType !== "ALL") {
+            params.set("sourceType", sourceType);
+            if (sourceId) params.set("sourceId", sourceId);
+        }
 
-        stats.vendingStats.forEach((s) => {
-            rows.push({
-                Type: "Vending Machine",
-                Name: s.name,
-                "Total Revenue": s.totalRevenue,
-                "Settled Amount": s.settledAmount,
-                "Unsettled (Pending)": s.unsettledAmount
-            });
-        });
-
-        const ws = XLSX.utils.json_to_sheet(rows);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Balance Sheet");
-        XLSX.writeFile(wb, `Campus_Delivery_Balance_Sheet_${new Date().toISOString().split('T')[0]}.xlsx`);
+        const url = `/api/admin/reports/sales?${params.toString()}`;
+        window.open(url, "_blank");
+        setDownloadOpen(false);
     };
 
     const renderStatRow = (item: StatItem) => (
@@ -122,9 +138,107 @@ export function AdminOrderStats({ stats }: AdminOrderStatsProps) {
         <div className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-xl font-bold">Financial Overview</h2>
-                <Button onClick={handleExport} variant="outline" className="gap-2">
-                    <Download className="w-4 h-4" /> Export to Excel
-                </Button>
+
+                <Dialog open={downloadOpen} onOpenChange={setDownloadOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="gap-2">
+                            <Download className="w-4 h-4" /> Download Reports
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Download Sales Report</DialogTitle>
+                            <DialogDescription>
+                                Select criteria to generate an Excel report of sales.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <Label>Data Source</Label>
+                                <Select value={sourceType} onValueChange={(val) => { setSourceType(val); setSourceId(""); }}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ALL">All Sources</SelectItem>
+                                        <SelectItem value="STORE">Specific Store</SelectItem>
+                                        <SelectItem value="VENDING">Specific Vending Machine</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {sourceType === "STORE" && (
+                                <div className="space-y-2">
+                                    <Label>Select Store</Label>
+                                    <Select value={sourceId} onValueChange={setSourceId}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a store" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {stats.storeStats.map(s => (
+                                                <SelectItem key={s._id} value={s._id}>{s.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+
+                            {sourceType === "VENDING" && (
+                                <div className="space-y-2">
+                                    <Label>Select Vending Machine</Label>
+                                    <Select value={sourceId} onValueChange={setSourceId}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a machine" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {stats.vendingStats.map(s => (
+                                                <SelectItem key={s._id} value={s._id}>{s.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+
+                            <div className="space-y-2">
+                                <Label>Date Range</Label>
+                                <Select value={range} onValueChange={setRange}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="today">Today</SelectItem>
+                                        <SelectItem value="yesterday">Yesterday</SelectItem>
+                                        <SelectItem value="2days">Last 2 Days</SelectItem>
+                                        <SelectItem value="week">This Week</SelectItem>
+                                        <SelectItem value="month">This Month</SelectItem>
+                                        <SelectItem value="custom">Custom Range</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {range === "custom" && (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Start Date</Label>
+                                        <Input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>End Date</Label>
+                                        <Input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setDownloadOpen(false)}>Cancel</Button>
+                            <Button onClick={handleDownload} className="gap-2">
+                                <Download className="w-4 h-4" /> Download Excel
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
