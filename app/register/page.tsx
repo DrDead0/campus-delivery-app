@@ -22,6 +22,7 @@ export default function RegisterPage() {
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
     const [address, setAddress] = useState("");
+    const [roomNumber, setRoomNumber] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -35,7 +36,7 @@ export default function RegisterPage() {
             const res = await fetch("/api/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, phone, address, password }),
+                body: JSON.stringify({ name, email, phone, address, roomNumber, password }),
             });
 
             console.log("Registration response status:", res.status);
@@ -122,6 +123,16 @@ export default function RegisterPage() {
                                     ))}
                                 </SelectContent>
                             </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="roomNumber">Room Number</Label>
+                            <Input
+                                id="roomNumber"
+                                type="text"
+                                placeholder="Room 101, Dorm A"
+                                value={roomNumber}
+                                onChange={(e) => setRoomNumber(e.target.value)}
+                            />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="password">Password</Label>

@@ -26,6 +26,10 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
+    roomNumber: {
+      type: String,
+      default: "",
+    },
     orderHistory: {
       type: [{ type: Schema.Types.ObjectId, ref: "OrderItem" }],
       default: [],

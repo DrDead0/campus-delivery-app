@@ -99,6 +99,9 @@ export default function Home() {
           if (data.address) {
             setSelectedHostel(data.address);
           }
+          if (data.roomNumber) {
+            setRoomNumber(data.roomNumber);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch profile:", err);

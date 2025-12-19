@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     if (!conn) {
         return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
     }
-    const user = await User.findById(payload.id).select('email phone name address');
+    const user = await User.findById(payload.id).select('email phone name address roomNumber');
     if (!user) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -26,5 +26,6 @@ export async function GET(request: NextRequest) {
         phone: user.phone,
         name: user.name,
         address: user.address,
+        roomNumber: user.roomNumber,
     });
 }
