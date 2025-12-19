@@ -72,26 +72,16 @@ export default async function StoresAdminPage() {
            
            If not, I'll create a new page for single store admin details.
         */}
-      </CardContent>
-        </Card >
-      </div >
-    );
-  } catch (err) {
-    // ...
-  }
-}
 
-// I will create `app/admin/stores/[id]/page.tsx` for specific store admin view. 
-// That seems cleaner than jamming it into the list.
-<AutoRefresh />
-      </div >
+        <AutoRefresh />
+      </div>
     );
   } catch (err) {
-  console.error("StoresAdminPage error:", err);
-  return (
-    <div className="min-h-screen p-4">
-      <p className="text-red-600">Failed to load stores.</p>
-    </div>
-  );
-}
+    console.error("StoresAdminPage error:", err);
+    return (
+      <div className="min-h-screen p-4">
+        <p className="text-red-600">Failed to load stores.</p>
+      </div>
+    );
+  }
 }
