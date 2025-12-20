@@ -5,6 +5,9 @@ import dbConnect from "@/app/db";
 import Store from "@/app/models/store.model";
 import bcrypt from "bcryptjs";
 
+import Product from "@/app/models/product.model";
+import Cart from "@/app/models/cart.model";
+
 export async function createStoreAction(formData: FormData) {
   try {
     const conn = await dbConnect();
@@ -16,16 +19,17 @@ export async function createStoreAction(formData: FormData) {
     const username = String(formData.get("username") || "").trim();
     const password = String(formData.get("password") || "").trim();
     const phoneNumber = String(formData.get("phoneNumber") || "").trim();
+    const email = String(formData.get("email") || "").trim();
 
-    if (!id || !name || !description || !username || !password)
+    if (!id || !name || !description || !username || !password || !email)
       return { ok: false, error: "All fields are required." };
 
     // Check uniqueness
     const existing = await Store.findOne({
-      $or: [{ id }, { username }],
+      $or: [{ id }, { username }, { email }],
     });
     if (existing)
-      return { ok: false, error: "Store ID or Username already exists." };
+      return { ok: false, error: "Store ID, Username or Email already exists." };
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -40,6 +44,7 @@ export async function createStoreAction(formData: FormData) {
       image: "/placeholder-logo.png", // Default image
       location: "Active Campus", // Default location
       phoneNumber,
+      email,
     });
 
     revalidatePath("/admin/stores");
@@ -63,10 +68,11 @@ export async function updateStoreAction(formData: FormData) {
     const username = String(formData.get("username") || "").trim();
     const password = String(formData.get("password") || "").trim();
     const phoneNumber = String(formData.get("phoneNumber") || "").trim();
+    const email = String(formData.get("email") || "").trim();
 
     if (!originalId) return { ok: false, error: "Missing original store id." };
 
-    const updateData: any = { id, name, description, type, username, phoneNumber };
+    const updateData: any = { id, name, description, type, username, phoneNumber, email };
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);
     }
@@ -92,7 +98,27 @@ export async function deleteStoreAction(formData: FormData) {
     if (!conn) return { ok: false, error: "Database not configured." };
     const id = String(formData.get("id") || "");
     if (!id) return { ok: false, error: "Missing store id." };
-    await Store.findOneAndDelete({ id }); // usage of custom ID
+
+    const store = await Store.findOne({ id });
+    if (store) {
+      // Cleanup products
+      await Product.deleteMany({ store: store._id });
+
+      // Cleanup carts: remove items where sourceId matches this store
+      // Note: store._id is ObjectId, items.sourceId in Cart is ObjectId.
+      // But let's be careful about type matching. sourceId in Cart is ObjectId.
+      await Cart.updateMany(
+        { "items.sourceId": store._id },
+        { $pull: { items: { sourceId: store._id } } }
+      );
+
+      // Delete store
+      await Store.findByIdAndDelete(store._id);
+    } else {
+      // Try checking if it was passed as _id? 
+      // But UI sends custom ID usually.
+    }
+
     revalidatePath("/admin/stores");
     revalidatePath("/api/stores");
     return { ok: true };

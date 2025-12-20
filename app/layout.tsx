@@ -55,7 +55,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans antialiased ${alkatra.variable}`}>
+      <body className={`font-sans antialiased ${alkatra.variable}`} suppressHydrationWarning>
         <CartProvider>
           {children}
           <Toaster />

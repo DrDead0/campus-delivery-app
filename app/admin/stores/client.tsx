@@ -113,6 +113,18 @@ function StoreForm({ store, onClose, onSave }: StoreFormProps) {
       </div>
 
       <div>
+        <Label htmlFor="email">Email (for orders)</Label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="store@example.com"
+          defaultValue={store?.email || ""}
+          required
+        />
+      </div>
+
+      <div>
         <Label htmlFor="username">Username (for store login)</Label>
         <Input
           id="username"

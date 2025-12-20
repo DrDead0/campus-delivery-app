@@ -78,15 +78,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                         // but actually we are just calling a server action. 
                         // Next.js handles this fine usually.
                         const { getUserAddress } = await import("@/app/actions/user-actions");
-                        const address = await getUserAddress(userId);
-                        if (address) {
-                            const parts = address.split(',');
-                            if (parts.length > 1) {
-                                setRoomNumber(parts[0].trim());
-                                setSelectedHostel(parts.slice(1).join(',').trim());
-                            } else {
-                                setRoomNumber(address);
-                            }
+                        const userData = await getUserAddress(userId);
+                        if (userData) {
+                            if (userData.roomNumber) setRoomNumber(userData.roomNumber);
+                            if (userData.address) setSelectedHostel(userData.address);
                         }
                     }
                 } catch (e) {
