@@ -396,7 +396,29 @@ export function ProfileScreen() {
                     <span className="text-sm text-muted-foreground">
                       {new Date(order.createdAt).toLocaleDateString()}
                     </span>
-                    <span className="font-bold">₹{order.totalAmount}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold">₹{order.totalAmount}</span>
+                      {(order.status === "PENDING" || order.status === "CONFIRMED") && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="h-6 text-xs px-2"
+                          onClick={async () => {
+                            if (!confirm("Cancel this order?")) return;
+                            const { cancelOrderAction } = await import("@/app/actions/order-actions");
+                            const res = await cancelOrderAction(order._id);
+                            if (res.ok) {
+                              // Force reload or re-fetch
+                              window.location.reload();
+                            } else {
+                              alert(res.error || "Failed to cancel");
+                            }
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Display Source Info (Take from first item for now as orders are typically single source) */}

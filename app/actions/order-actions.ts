@@ -6,13 +6,61 @@ import User from "@/app/models/user.model";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { Types } from "mongoose";
+import { sendOrderNotification } from "@/app/utils/mail";
+import path from "path";
+import dotenv from "dotenv";
+import fs from "fs";
 
-// Initialize Razorpay
-// Note: In production, these should be in process.env
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_placeholder",
-    key_secret: process.env.RAZORPAY_KEY_SECRET || "secret_placeholder",
-});
+// Helper to manually parse env file
+// Helper to manually parse env file
+function getEnvManual(key: string): string | undefined {
+    try {
+        const envPath = path.resolve(process.cwd(), '.env.local');
+        console.log(`[ManualEnv] Checking path: ${envPath}`);
+
+        if (fs.existsSync(envPath)) {
+            const content = fs.readFileSync(envPath, 'utf8');
+
+            // Debug: Log all keys found in the file (safely)
+            const allKeys = content.match(/^\s*([A-Z_]+)\s*=/gm) || [];
+            console.log(`[ManualEnv] Keys found in file: ${allKeys.map(k => k.split('=')[0].trim()).join(', ')}`);
+
+            // Robust regex: 
+            // 1. Start of line (with optional whitespace)
+            // 2. Key
+            // 3. Optional whitespace, =, optional whitespace
+            // 4. Value group: 
+            //    - optional quote
+            //    - content (lazy)
+            //    - optional quote
+            // 5. Ignore trailing comments or whitespace
+            const regex = new RegExp(`^\\s*${key}\\s*=\\s*["']?(.*?)["']?\\s*(?:#.*)?$`, 'm');
+            const match = content.match(regex);
+
+            if (match) {
+                console.log(`[ManualEnv] Found value for ${key}`);
+                return match[1].trim();
+            } else {
+                console.log(`[ManualEnv] NO match for ${key}`);
+            }
+        } else {
+            console.log(`[ManualEnv] File not found at ${envPath}`);
+        }
+    } catch (e) {
+        console.error("Manual env parse failed:", e);
+    }
+    return undefined;
+}
+
+
+
+interface CreateOrderParams {
+    userId: string;
+    items: any[];
+    totalAmount: number;
+    paymentMethod: string;
+    address: any;
+}
 
 export async function createOrder({
     userId,
@@ -20,7 +68,7 @@ export async function createOrder({
     totalAmount,
     paymentMethod,
     address,
-}) {
+}: CreateOrderParams) {
     await dbConnect();
 
     try {
@@ -38,12 +86,49 @@ export async function createOrder({
         let razorpayOrderData = null;
 
         if (paymentMethod === "ONLINE") {
+            // Try process.env first, then manual parsing
+            let keyId = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+            let keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+            if (!keyId) keyId = getEnvManual('RAZORPAY_KEY_ID') || getEnvManual('NEXT_PUBLIC_RAZORPAY_KEY_ID');
+            if (!keySecret) keySecret = getEnvManual('RAZORPAY_KEY_SECRET');
+
+            if (!keyId || !keySecret || keyId === "rzp_test_placeholder") {
+                const cwd = process.cwd();
+                const envKeys = Object.keys(process.env).filter(k => k.includes('RAZORPAY'));
+
+                console.error("Razorpay keys missing or using placeholder", {
+                    keyIdPresent: !!keyId,
+                    keySecretPresent: !!keySecret,
+                    isPlaceholder: keyId === "rzp_test_placeholder",
+                    cwd: cwd,
+                    envKeysFound: envKeys
+                });
+
+                let errorDetails = `Payment gateway configuration missing. CWD: ${cwd}. EnvKeys: ${envKeys.join(', ')}.`;
+                if (!keyId) errorDetails += " (Key ID missing - check .env.local format)";
+                else if (keyId === "rzp_test_placeholder") errorDetails += " (Key ID is placeholder)";
+                if (!keySecret) errorDetails += " (Key Secret missing - check .env.local format)";
+
+                return { success: false, error: errorDetails };
+            }
+
+            if (!totalAmount || totalAmount <= 0) {
+                return { success: false, error: "Invalid total amount." };
+            }
+
+            // Initialize Razorpay instance with the fresh keys
+            const razorpayInstance = new Razorpay({
+                key_id: keyId,
+                key_secret: keySecret,
+            });
+
             const options = {
                 amount: Math.round(totalAmount * 100), // amount in lowest currency unit (paise)
                 currency: "INR",
                 receipt: `receipt_${new Date().getTime()}`,
             };
-            const order = await razorpay.orders.create(options);
+            const order = await razorpayInstance.orders.create(options);
             newOrder.razorpayOrderId = order.id;
             razorpayOrderData = order;
         }
@@ -55,32 +140,85 @@ export async function createOrder({
             $push: { orderHistory: savedOrder._id },
         });
 
+        // Notify Stores
+        try {
+            // Group items by source to avoid duplicate emails to same store for mixed items? 
+            // Though normally cart is one store. But let's be safe.
+            const sourceGroups: Record<string, any[]> = {};
+            items.forEach((item: any) => {
+                if (item.sourceModel === 'Store' && item.sourceId) {
+                    if (!sourceGroups[item.sourceId]) sourceGroups[item.sourceId] = [];
+                    sourceGroups[item.sourceId].push(item);
+                }
+            });
+
+            // Send emails
+            for (const [sid, sItems] of Object.entries(sourceGroups)) {
+                // Try custom ID then ObjectId
+                let store = await Store.findOne({ id: sid });
+                if (!store && Types.ObjectId.isValid(sid)) store = await Store.findById(sid);
+
+                // If username is an email, send notification
+                if (store && store.email) {
+                    await sendOrderNotification(store.email, {
+                        id: savedOrder._id.toString(),
+                        totalAmount: totalAmount, // This is grand total, maybe calculate store total?
+                        // calculate store total
+                        items: sItems
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Failed to send notifications", e);
+        }
+
         return {
             success: true,
             orderId: savedOrder._id.toString(),
             razorpayOrder: razorpayOrderData,
         };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error creating order:", error);
-        return { success: false, error: error.message };
+        // detailed logging
+        if (error.error) console.error("Razorpay Error Details:", error.error);
+
+        const errorMessage = error?.message || (typeof error === 'string' ? error : "Unknown error");
+        return { success: false, error: errorMessage };
     }
+}
+
+interface VerifyPaymentParams {
+    orderId: string;
+    razorpayPaymentId: string;
+    razorpaySignature: string;
 }
 
 export async function verifyPayment({
     orderId,
     razorpayPaymentId,
     razorpaySignature,
-}) {
+}: VerifyPaymentParams) {
     await dbConnect();
 
     try {
         const order = await Order.findById(orderId);
         if (!order) throw new Error("Order not found");
 
+        // Dynamic load for verification as well
+        // try {
+        //     const envPath = path.resolve(process.cwd(), '.env.local');
+        //     dotenv.config({ path: envPath, override: true });
+        // } catch (e) { /* ignore */ }
+
+        let keySecret = process.env.RAZORPAY_KEY_SECRET;
+        if (!keySecret) keySecret = getEnvManual('RAZORPAY_KEY_SECRET');
+
+        if (!keySecret) throw new Error("Payment verification failed: Configuration missing");
+
         const generated_signature = crypto
             .createHmac(
                 "sha256",
-                process.env.RAZORPAY_KEY_SECRET || "secret_placeholder"
+                keySecret
             )
             .update(order.razorpayOrderId + "|" + razorpayPaymentId)
             .digest("hex");
@@ -96,11 +234,12 @@ export async function verifyPayment({
         }
     } catch (error) {
         console.error("Error verifying payment:", error);
-        return { success: false, error: error.message };
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        return { success: false, error: errorMessage };
     }
 }
 
-export async function getUserOrders(userId) {
+export async function getUserOrders(userId: string) {
     await dbConnect();
     try {
         // Query the Order collection directly instead of relying on user.orderHistory array.
@@ -115,20 +254,20 @@ export async function getUserOrders(userId) {
         // Let's try to be smart about it.
 
         const sourceIds = new Set();
-        ordersJson.forEach(order => {
+        ordersJson.forEach((order: any) => {
             if (order.items && order.items.length > 0) {
                 // Usually an order is from ONE source, but our schema allows multiple?
                 // Schema has items array, each item has sourceId.
                 // In practice, a cart is usually per-store.
                 // let's grab unique sourceIds from all items in all orders.
-                order.items.forEach(item => {
+                order.items.forEach((item: any) => {
                     if (item.sourceId) sourceIds.add(item.sourceId);
                 });
             }
         });
 
-        const storeMap = {}; // id -> { name, phone }
-        const vendingMap = {}; // id -> { name, phone }
+        const storeMap: Record<string, { name: string; phone: string | null }> = {}; // id -> { name, phone }
+        const vendingMap: Record<string, { name: string; phone: string | null }> = {}; // id -> { name, phone }
 
         // Fetch details for all identified sources
         // We have to check both Stores and VendingMachines because sourceIds are mixed?
@@ -138,9 +277,9 @@ export async function getUserOrders(userId) {
         const storeIds = new Set();
         const vendingIds = new Set();
 
-        ordersJson.forEach(order => {
+        ordersJson.forEach((order: any) => {
             if (order.items) {
-                order.items.forEach(item => {
+                order.items.forEach((item: any) => {
                     if (item.sourceModel === 'Store') storeIds.add(item.sourceId);
                     else if (item.sourceModel === 'VendingMachine') vendingIds.add(item.sourceId);
                 });
@@ -182,9 +321,9 @@ export async function getUserOrders(userId) {
         }
 
         // Attach to orders
-        const enrichedOrders = ordersJson.map(order => {
-            const enrichedItems = order.items.map(item => {
-                let details = { name: 'Unknown', phone: null };
+        const enrichedOrders = ordersJson.map((order: any) => {
+            const enrichedItems = order.items.map((item: any) => {
+                let details: { name: string; phone: string | null } = { name: 'Unknown', phone: null };
                 if (item.sourceModel === 'Store') details = storeMap[item.sourceId] || details;
                 else if (item.sourceModel === 'VendingMachine') details = vendingMap[item.sourceId] || details;
 
@@ -283,7 +422,7 @@ export async function getAdminStats() {
     }
 }
 
-export async function settleOrders(sourceId) {
+export async function settleOrders(sourceId: string) {
     await dbConnect();
     try {
         // Mark all items from this source as settled
@@ -299,7 +438,8 @@ export async function settleOrders(sourceId) {
         return { success: true };
     } catch (error) {
         console.error("Error settling orders:", error);
-        return { success: false, error: error.message };
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        return { success: false, error: errorMessage };
     }
 }
 
@@ -317,8 +457,18 @@ export async function getStoreOrders(storeId: string) {
         // NOTE: storeId might be the custom 'id' string (e.g. "2") or an ObjectId string.
         // Our Store model uses custom 'id' for sourceId in items (usually).
 
-        const orders = await Order.find({ "items.sourceId": storeId }).sort({ createdAt: -1 });
-        return JSON.parse(JSON.stringify(orders));
+        const orders = await Order.find({ "items.sourceId": storeId }).sort({ createdAt: -1 }).lean();
+
+        // Filter items to only show those belonging to this store
+        const filteredOrders = orders.map((order: any) => {
+            const relevantItems = (order.items || []).filter((item: any) => String(item.sourceId) === String(storeId));
+            return {
+                ...order,
+                items: relevantItems
+            };
+        }).filter((order: any) => order.items.length > 0);
+
+        return JSON.parse(JSON.stringify(filteredOrders));
     } catch (error) {
         console.error("Error fetching store orders:", error);
         return [];

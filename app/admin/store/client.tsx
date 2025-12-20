@@ -298,98 +298,119 @@ function OrdersManager({
             No orders found matching your filters.
           </div>
         ) : (
-          filteredOrders.map((order) => (
-            <Card key={order._id} className="overflow-hidden">
-              <CardContent className="p-4">
-                <div className="flex flex-col md:flex-row justify-between gap-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
-                        #{order._id.slice(-6)}
-                      </span>
-                      <Badge
-                        variant={
-                          order.status === "DELIVERED" ||
-                          order.status === "COMPLETED"
-                            ? "default"
-                            : order.status === "CANCELLED"
-                            ? "destructive"
-                            : "secondary"
-                        }
-                      >
-                        {order.status}
-                      </Badge>
-                      <span
-                        className="text-sm text-gray-500"
-                        suppressHydrationWarning
-                      >
-                        {new Date(order.createdAt).toLocaleString()}
-                      </span>
-                    </div>
-                    {/* Items */}
-                    <div className="space-y-1">
-                      {order.items.map((item: any, idx: number) => (
-                        <div key={idx} className="flex gap-2 text-sm">
-                          <span className="font-semibold">
-                            {item.quantity}x
-                          </span>
-                          <span>{item.name}</span>
-                          <span className="text-gray-400">({item.source})</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="font-bold">Total: ₹{order.totalAmount}</div>
-                    {order.address && (
-                      <div className="text-xs text-gray-500">
-                        Deliver to: {order.address}
-                      </div>
-                    )}
-                    {/* Helper to show user payment status if needed */}
-                    <div className="text-xs">
-                      Payment:{" "}
-                      <span
-                        className={
-                          order.paymentStatus === "COMPLETED"
-                            ? "text-green-600"
-                            : "text-orange-600"
-                        }
-                      >
-                        {order.paymentStatus}
-                      </span>
-                    </div>
-                  </div>
+          filteredOrders.map((order) => {
+            const storeTotal = order.items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
+            const isSettled = order.items.length > 0 && order.items.every((item: any) => item.isSettled);
 
-                  <div className="flex flex-row md:flex-col gap-2 justify-center min-w-[120px]">
-                    {order.status !== "DELIVERED" &&
-                      order.status !== "CANCELLED" && (
-                        <>
-                          {order.status !== "PREPARING" && (
+            return (
+              <Card key={order._id} className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex flex-col md:flex-row justify-between gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                          #{order._id.slice(-6)}
+                        </span>
+                        <Badge
+                          variant={
+                            order.status === "DELIVERED" ||
+                              order.status === "COMPLETED"
+                              ? "default"
+                              : order.status === "CANCELLED"
+                                ? "destructive"
+                                : "secondary"
+                          }
+                        >
+                          {order.status}
+                        </Badge>
+
+                        <Badge
+                          variant="outline"
+                          className={isSettled ? "bg-green-50 text-green-700 border-green-200" : "bg-yellow-50 text-yellow-700 border-yellow-200"}
+                        >
+                          {isSettled ? "Settled" : "Settlement Pending"}
+                        </Badge>
+
+                        <span
+                          className="text-sm text-gray-500"
+                          suppressHydrationWarning
+                        >
+                          {new Date(order.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      {/* Items */}
+                      <div className="space-y-1">
+                        {order.items.map((item: any, idx: number) => (
+                          <div key={idx} className="flex gap-2 text-sm">
+                            <span className="font-semibold">
+                              {item.quantity}x
+                            </span>
+                            <span>{item.name}</span>
+                            <span className="text-gray-400">({item.source})</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="font-bold">Total Earnings: ₹{storeTotal}</div>
+                      {order.address && (
+                        <div className="text-xs text-gray-500">
+                          Deliver to: {order.address}
+                        </div>
+                      )}
+
+                    </div>
+
+                    <div className="flex flex-row md:flex-col gap-2 justify-center min-w-[120px]">
+                      {(order.status === "PENDING" || order.status === "CONFIRMED") && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={async () => {
+                            if (!confirm("Are you sure you want to cancel this order?")) return;
+                            const { cancelOrderAction } = await import("@/app/actions/order-actions");
+                            const res = await cancelOrderAction(order._id);
+                            if (res.ok) {
+                              toast.success("Order cancelled");
+                              router.refresh();
+                            } else {
+                              toast.error(res.error || "Failed to cancel");
+                            }
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+
+                      {order.status !== "DELIVERED" &&
+                        order.status !== "CANCELLED" && (
+                          <>
+                            {order.status !== "PREPARING" && (
+                              <Button
+                                size="sm"
+                                onClick={() =>
+                                  handleStatusUpdate(order._id, "PREPARING")
+                                }
+                              >
+                                Prepare
+                              </Button>
+                            )}
                             <Button
                               size="sm"
+                              variant="default"
+                              className="bg-green-600 hover:bg-green-700"
                               onClick={() =>
-                                handleStatusUpdate(order._id, "PREPARING")
+                                handleStatusUpdate(order._id, "DELIVERED")
                               }
                             >
-                              Prepare
+                              Ready / Deliver
                             </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="default"
-                            className="bg-green-600 hover:bg-green-700"
-                            onClick={() =>
-                              handleStatusUpdate(order._id, "DELIVERED")
-                            }
-                          >
-                            Ready / Deliver
-                          </Button>
-                        </>
-                      )}
+                          </>
+                        )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                </CardContent>
+              </Card>
+            );
+          })
         )}
       </div>
     </section>
@@ -608,12 +629,12 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
             image: newImage,
             productId: item.productId
               ? {
-                  ...item.productId,
-                  name: newName,
-                  Description: newDesc,
-                  price: newPrice,
-                  image: newImage,
-                }
+                ...item.productId,
+                name: newName,
+                Description: newDesc,
+                price: newPrice,
+                image: newImage,
+              }
               : undefined,
             availability:
               type === "store" ? newAvailability : item.availability,
@@ -737,19 +758,18 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
                         ) : (
                           <Badge
                             variant={isOutOfStock ? "destructive" : "secondary"}
-                            className={`capitalize text-[10px] h-5 px-1.5 ${
-                              !isOutOfStock && quantity <= 10
-                                ? "bg-orange-100 text-orange-700 hover:bg-orange-100"
-                                : !isOutOfStock
+                            className={`capitalize text-[10px] h-5 px-1.5 ${!isOutOfStock && quantity <= 10
+                              ? "bg-orange-100 text-orange-700 hover:bg-orange-100"
+                              : !isOutOfStock
                                 ? "bg-green-100 text-green-700 hover:bg-green-100"
                                 : ""
-                            }`}
+                              }`}
                           >
                             {isOutOfStock
                               ? "Out of Stock"
                               : quantity <= 10
-                              ? "Low Stock"
-                              : `In Stock: ${quantity}`}
+                                ? "Low Stock"
+                                : `In Stock: ${quantity}`}
                           </Badge>
                         )}
                       </div>
@@ -804,8 +824,8 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
                       isNew
                         ? "veg"
                         : editingItem.productId?.type ||
-                          editingItem.type ||
-                          "veg"
+                        editingItem.type ||
+                        "veg"
                     }
                   >
                     <option value="veg">Veg</option>
@@ -824,8 +844,8 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
                     isNew
                       ? ""
                       : editingItem.productId?.Description ||
-                        editingItem.description ||
-                        ""
+                      editingItem.description ||
+                      ""
                   }
                 />
               </div>
