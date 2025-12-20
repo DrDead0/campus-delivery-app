@@ -493,6 +493,16 @@ function DetailsForm({
         />
       </div>
       <div>
+        <Label htmlFor="phoneNumber">Phone Number</Label>
+        <Input
+          id="phoneNumber"
+          name="phoneNumber"
+          type="number"
+          defaultValue={data.phoneNumber}
+          required
+        />
+      </div>
+      <div>
         <Label htmlFor="image">Image URL</Label>
         <Input id="image" name="image" defaultValue={data.image} required />
       </div>

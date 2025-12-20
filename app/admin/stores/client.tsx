@@ -101,6 +101,18 @@ function StoreForm({ store, onClose, onSave }: StoreFormProps) {
       </div>
 
       <div>
+        <Label htmlFor="phoneNumber">Phone Number</Label>
+        <Input
+          id="phoneNumber"
+          name="phoneNumber"
+          type="number"
+          placeholder="e.g. 9876543210"
+          defaultValue={store?.phoneNumber || ""}
+          required
+        />
+      </div>
+
+      <div>
         <Label htmlFor="username">Username (for store login)</Label>
         <Input
           id="username"
@@ -185,10 +197,7 @@ export function StoresListClient({ stores }: { stores: any[] }) {
                 </p>
               </div>
               <Link href={`/admin/stores/${store._id}`}>
-                <Button
-                  size="sm"
-                  variant="outline"
-                >
+                <Button size="sm" variant="outline">
                   Orders
                 </Button>
               </Link>
@@ -211,10 +220,9 @@ export function StoresListClient({ stores }: { stores: any[] }) {
                 Delete
               </Button>
             </div>
-
           ))
         )}
-      </div >
+      </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
@@ -233,7 +241,6 @@ export function StoresListClient({ stores }: { stores: any[] }) {
                 setSaving(false);
               }
             }}
-            
             onClose={() => {
               setOpen(false);
               setEditingStore(null);
@@ -242,16 +249,14 @@ export function StoresListClient({ stores }: { stores: any[] }) {
         </DialogContent>
       </Dialog>
 
-      {
-        saving && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-background p-6 rounded-lg shadow-lg flex flex-col items-center gap-3">
-              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-sm font-medium">Saving store...</p>
-            </div>
+      {saving && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background p-6 rounded-lg shadow-lg flex flex-col items-center gap-3">
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-sm font-medium">Saving store...</p>
           </div>
-        )
-      }
+        </div>
+      )}
     </>
   );
 }
