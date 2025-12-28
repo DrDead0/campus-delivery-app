@@ -1,5 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Star, MapPin, Clock } from "lucide-react";
 import { useState, useMemo, useRef, useEffect } from "react";
 
@@ -81,14 +88,18 @@ export function StoreList({ stores, onSelectStore }: StoreListProps) {
         <h2 className="text-lg font-bold">Top Stores for you</h2>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Sort by</span>
-          <select
-            className="text-xs font-medium bg-transparent border-none outline-none cursor-pointer focus:ring-0"
+          <Select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "relevance" | "name")}
+            onValueChange={(val) => setSortBy(val as "relevance" | "name")}
           >
-            <option value="relevance">Relevance</option>
-            <option value="name">Name</option>
-          </select>
+            <SelectTrigger className="w-[110px] h-8 text-xs border-none bg-transparent shadow-none focus:ring-0 px-0 gap-1 text-primary data-[placeholder]:text-foreground justify-end [&>svg]:opacity-100">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="relevance">Relevance</SelectItem>
+              <SelectItem value="name">Name</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

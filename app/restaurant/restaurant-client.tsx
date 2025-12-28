@@ -25,6 +25,7 @@ import { hostels, categories } from "@/lib/data";
 import { useCart } from "@/components/cart-context";
 import { useRouter } from "next/navigation";
 import { getStoresAction } from "./actions";
+import { ModeToggle } from "@/components/mode-toggle";
 
 interface RestaurantClientProps {
   initialStores: any[];
@@ -125,28 +126,31 @@ export default function RestaurantClient({
             <h1 className="text-2xl font-bold">SnackHub</h1>
             <p className="text-xs opacity-80">Snacks delivered to your room</p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-primary-foreground hover:bg-white/20"
-            onClick={() => {
-              if (!localStorage.getItem("token")) {
-                alert("Please login to view cart and order.");
-                return;
-              }
-              // Navigate to cart
-              router.push("/restaurant/cart");
-            }}
-          >
-            <div className="relative">
-              <ShoppingCart className="w-6 h-6" />
-              {totals.totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                  {totals.totalItems}
-                </span>
-              )}
-            </div>
-          </Button>
+          <div className="flex items-center gap-2">
+            <ModeToggle className="bg-transparent border-none text-primary-foreground hover:bg-white/20 focus-visible:ring-0 focus-visible:offset-0" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-primary-foreground hover:bg-white/20"
+              onClick={() => {
+                if (!localStorage.getItem("token")) {
+                  alert("Please login to view cart and order.");
+                  return;
+                }
+                // Navigate to cart
+                router.push("/restaurant/cart");
+              }}
+            >
+              <div className="relative">
+                <ShoppingCart className="w-6 h-6" />
+                {totals.totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                    {totals.totalItems}
+                  </span>
+                )}
+              </div>
+            </Button>
+          </div>
         </div>
 
         {/* Delivery Address Card */}
@@ -234,8 +238,8 @@ export default function RestaurantClient({
 
       {/* Special Offer Banner */}
       <div className="px-4 mt-4">
-        <div className="bg-green-100 border border-green-200 rounded-xl p-3 flex items-center justify-center text-center shadow-sm">
-          <p className="text-green-800 text-sm font-medium">
+        <div className="bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-900/50 rounded-xl p-3 flex items-center justify-center text-center shadow-sm">
+          <p className="text-green-800 dark:text-green-300 text-sm font-medium">
             Special Offer: Free delivery on orders above ₹100
           </p>
         </div>
@@ -284,12 +288,6 @@ export default function RestaurantClient({
           }}
         />
       </div>
-      {/* Debug/Live Indicator */}
-      {lastUpdated && (
-        <div className="text-center py-2 text-[10px] text-muted-foreground opacity-50">
-          Live updates active • Last updated: {lastUpdated.toLocaleTimeString()}
-        </div>
-      )}
     </div>
   );
 }

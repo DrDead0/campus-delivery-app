@@ -48,19 +48,28 @@ export const viewport: Viewport = {
   ],
 };
 
+import { ThemeProvider } from "@/components/theme-provider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`font-sans antialiased ${alkatra.variable}`} suppressHydrationWarning>
-        <CartProvider>
-          {children}
-          <Toaster />
-          <Analytics />
-        </CartProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`font-sans antialiased ${alkatra.variable}`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <CartProvider>
+            {children}
+            <Toaster />
+            <Analytics />
+          </CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

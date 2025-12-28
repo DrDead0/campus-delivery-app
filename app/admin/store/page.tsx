@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { logoutAction } from "./actions";
 import { getStoreOrders } from "@/app/actions/order-actions";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export const dynamic = "force-dynamic";
 
@@ -81,8 +82,8 @@ export default async function StoreDashboardPage() {
   const orders = await getStoreOrders(data.id || data._id);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <header className="bg-white border-b px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+    <div className="min-h-screen bg-background pb-20">
+      <header className="bg-card border-b px-6 py-4 flex items-center justify-between sticky top-0 z-10 transition-colors">
         <div>
           <h1 className="text-xl font-bold">
             {data.name || data.names || "Dashboard"}
@@ -93,6 +94,7 @@ export default async function StoreDashboardPage() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm font-medium">{data.username}</span>
+          <ModeToggle />
           <form action={logoutAction}>
             <Button variant="ghost" size="sm">
               Logout

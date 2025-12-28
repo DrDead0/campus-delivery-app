@@ -16,6 +16,7 @@ import Event from "@/app/models/events.model";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { getAdminStats } from "@/app/actions/order-actions";
 import { AdminOrderStats } from "@/components/admin-order-stats";
+import { ModeToggle } from "@/components/mode-toggle";
 
 async function getAuth() {
   const cookieStore = await cookies();
@@ -43,7 +44,9 @@ export default async function AdminDashboard() {
     const dbProductsCount = conn ? await Product.countDocuments() : 0;
     const dbEventsCount = conn ? await Event.countDocuments() : 0;
     // ...
-    const vendingMachinesData = conn ? await VendingMachine.find({}).lean() : [];
+    const vendingMachinesData = conn
+      ? await VendingMachine.find({}).lean()
+      : [];
 
     // ...
 
@@ -58,9 +61,12 @@ export default async function AdminDashboard() {
       <div className="min-h-screen px-4 py-6 space-y-6 max-w-7xl mx-auto">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
-          <form action={logoutAction}>
-            <Button variant="secondary">Logout</Button>
-          </form>
+          <div className="flex items-center gap-4">
+            <ModeToggle />
+            <form action={logoutAction}>
+              <Button variant="secondary">Logout</Button>
+            </form>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

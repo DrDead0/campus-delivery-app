@@ -132,13 +132,13 @@ export function DeliveryScreen({
   );
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans pb-32">
+    <div className="min-h-screen bg-background text-foreground font-sans pb-32">
       {/* Floating Header */}
       <div className="sticky top-0 z-20 bg-[#1C45C2] backdrop-blur-md transition-all border-b border-white/5 shadow-sm">
         <div className="flex items-center justify-between p-4">
           <button
             onClick={() => router.back()}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white text-[#1C45C2] hover:bg-blue-50 active:scale-95 transition-all shadow-md"
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-background text-primary hover:bg-accent active:scale-95 transition-all shadow-md"
           >
             <ArrowLeft className="w-5 h-5 font-bold" />
           </button>
@@ -151,7 +151,7 @@ export function DeliveryScreen({
                   <Search className="w-4 h-4 text-gray-400" />
                 </div>
                 <Input
-                  className="rounded-full bg-white border-none pl-10 h-10 w-full focus-visible:ring-2 focus-visible:ring-black/10 text-sm text-gray-900 placeholder:text-gray-400 shadow-sm transition-all"
+                  className="rounded-full bg-background border-none pl-10 h-10 w-full focus-visible:ring-2 focus-visible:ring-ring/20 text-sm text-foreground placeholder:text-muted-foreground shadow-sm transition-all"
                   placeholder="Search in app..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -214,7 +214,7 @@ export function DeliveryScreen({
                 <Filter className="w-3 h-3" /> Filter
               </button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-sm rounded-xl bg-white text-gray-900">
+            <DialogContent className="sm:max-w-sm rounded-xl bg-card text-card-foreground">
               <DialogHeader>
                 <DialogTitle>Filter & Sort</DialogTitle>
               </DialogHeader>
@@ -242,7 +242,7 @@ export function DeliveryScreen({
                         />
                         <Label
                           htmlFor={opt.value}
-                          className="font-normal text-gray-700"
+                          className="font-normal text-foreground"
                         >
                           {opt.label}
                         </Label>
@@ -264,7 +264,7 @@ export function DeliveryScreen({
             onClick={() => toggleFilter("newArrival")}
             className={`px-3 py-1.5 border rounded-full backdrop-blur-md shadow-sm shrink-0 whitespace-nowrap text-xs font-bold transition-all ${
               activeFilters.newArrival
-                ? "bg-white border-white text-black"
+                ? "bg-background border-background text-foreground"
                 : "bg-black/40 border-white/20 text-white hover:bg-black/50"
             }`}
           >
@@ -275,7 +275,7 @@ export function DeliveryScreen({
             onClick={() => toggleFilter("popular")}
             className={`px-3 py-1.5 border rounded-full backdrop-blur-md shadow-sm shrink-0 whitespace-nowrap text-xs font-bold transition-all ${
               activeFilters.popular
-                ? "bg-white border-white text-black"
+                ? "bg-background border-background text-foreground"
                 : "bg-black/40 border-white/20 text-white hover:bg-black/50"
             }`}
           >
@@ -299,9 +299,9 @@ export function DeliveryScreen({
 
       {/* Recommended Section Title */}
       <div className="px-4 py-5">
-        <h2 className="text-base font-extrabold tracking-widest text-black uppercase mb-4 flex items-center gap-2">
+        <h2 className="text-base font-extrabold tracking-widest text-foreground uppercase mb-4 flex items-center gap-2">
           Menu{" "}
-          <span className="text-zinc-600 text-xs lowercase font-medium">
+          <span className="text-muted-foreground text-xs lowercase font-medium">
             ({filteredItems.length})
           </span>
         </h2>
@@ -320,14 +320,14 @@ export function DeliveryScreen({
                   <div className="mb-2">
                     {item.type === "non-veg" ? <NonVegIcon /> : <VegIcon />}
                   </div>
-                  <h3 className="text-[17px] font-bold text-black leading-tight mb-1">
+                  <h3 className="text-[17px] font-bold text-foreground leading-tight mb-1">
                     {item.name}
                   </h3>
-                  <div className="text-sm font-medium text-black mb-2">
+                  <div className="text-sm font-medium text-foreground mb-2">
                     ₹{item.price}
                   </div>
 
-                  <p className="text-[13px] text-zinc-500 line-clamp-2 leading-relaxed font-medium mt-1">
+                  <p className="text-[13px] text-muted-foreground line-clamp-2 leading-relaxed font-medium mt-1">
                     {item.description}
                   </p>
 
@@ -384,19 +384,19 @@ export function DeliveryScreen({
                       qty === 0 ? (
                         <button
                           onClick={() => onAddToCart(item)}
-                          className="w-full bg-[#1C45C2] text-[#ffffff] font-extrabold text-sm py-2.5 rounded-xl  uppercase tracking-wider shadow-lg flex items-center justify-center gap-1 active:scale-95 transition-all"
+                          className="w-full bg-primary text-primary-foreground font-extrabold text-sm py-2.5 rounded-xl  uppercase tracking-wider shadow-lg flex items-center justify-center gap-1 active:scale-95 transition-all"
                         >
                           ADD
                         </button>
                       ) : (
-                        <div className="w-full flex items-center justify-between bg-[#1C45C2] rounded-xl h-[38px] overflow-hidden shadow-lg">
+                        <div className="w-full flex items-center justify-between bg-primary rounded-xl h-[38px] overflow-hidden shadow-lg">
                           <button
                             onClick={() => onUpdateQuantity(item.id, -1)}
                             className="w-9 h-full flex items-center justify-center text-white "
                           >
                             <Minus className="w-3.5 h-3.5 font-bold" />
                           </button>
-                          <span className="text-sm font-bold text-[#ffffff] tabular-nums">
+                          <span className="text-sm font-bold text-primary-foreground tabular-nums">
                             {qty}
                           </span>
                           <button
@@ -408,7 +408,7 @@ export function DeliveryScreen({
                         </div>
                       )
                     ) : (
-                      <div className="w-full bg-zinc-800 text-zinc-500 font-bold text-xs py-2 rounded-xl border border-zinc-700 text-center">
+                      <div className="w-full bg-muted text-muted-foreground font-bold text-xs py-2 rounded-xl border border-border text-center">
                         Unavailable
                       </div>
                     )}

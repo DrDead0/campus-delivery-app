@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { hostels } from "@/lib/data";
+import { ModeToggle } from "@/components/mode-toggle";
 
 interface Order {
   _id: string;
@@ -102,7 +103,9 @@ export function ProfileScreen() {
 
           if (data._id || data.id) {
             try {
-              const { getUserOrders } = await import("@/app/actions/order-actions");
+              const { getUserOrders } = await import(
+                "@/app/actions/order-actions"
+              );
               const orders = await getUserOrders(data._id || data.id);
               data.orders = orders;
             } catch (e) {
@@ -197,15 +200,18 @@ export function ProfileScreen() {
     <div className="pb-24 pt-6 px-4 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">My Profile</h1>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLogout}
-          className="text-red-500 hover:text-red-600 hover:bg-red-50 gap-2"
-        >
-          <LogOut className="w-4 h-4" />
-          Logout
-        </Button>
+        <div className="flex items-center gap-2">
+          <ModeToggle />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-2"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </Button>
+        </div>
       </div>
 
       {/* Profile Card */}
@@ -245,10 +251,11 @@ export function ProfileScreen() {
                               profileImage: avatar,
                             }))
                           }
-                          className={`relative aspect-square rounded-full overflow-hidden border-2 transition-all ${editForm.profileImage === avatar
-                            ? "border-primary ring-2 ring-primary ring-offset-2"
-                            : "border-transparent hover:border-muted-foreground"
-                            }`}
+                          className={`relative aspect-square rounded-full overflow-hidden border-2 transition-all ${
+                            editForm.profileImage === avatar
+                              ? "border-primary ring-2 ring-primary ring-offset-2"
+                              : "border-transparent hover:border-muted-foreground"
+                          }`}
                         >
                           <img
                             src={`/${avatar}`}
@@ -398,14 +405,17 @@ export function ProfileScreen() {
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="font-bold">₹{order.totalAmount}</span>
-                      {(order.status === "PENDING" || order.status === "CONFIRMED") && (
+                      {(order.status === "PENDING" ||
+                        order.status === "CONFIRMED") && (
                         <Button
                           size="sm"
                           variant="destructive"
                           className="h-6 text-xs px-2"
                           onClick={async () => {
                             if (!confirm("Cancel this order?")) return;
-                            const { cancelOrderAction } = await import("@/app/actions/order-actions");
+                            const { cancelOrderAction } = await import(
+                              "@/app/actions/order-actions"
+                            );
                             const res = await cancelOrderAction(order._id);
                             if (res.ok) {
                               // Force reload or re-fetch
@@ -422,17 +432,20 @@ export function ProfileScreen() {
                   </div>
 
                   {/* Display Source Info (Take from first item for now as orders are typically single source) */}
-                  {order.items.length > 0 && (order.items[0] as any).sourceName && (
-                    <div className="mb-2">
-                      <p className="text-sm font-semibold">{(order.items[0] as any).sourceName}</p>
-                      {(order.items[0] as any).sourcePhone && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Phone className="w-3 h-3" />
-                          {(order.items[0] as any).sourcePhone}
+                  {order.items.length > 0 &&
+                    (order.items[0] as any).sourceName && (
+                      <div className="mb-2">
+                        <p className="text-sm font-semibold">
+                          {(order.items[0] as any).sourceName}
                         </p>
-                      )}
-                    </div>
-                  )}
+                        {(order.items[0] as any).sourcePhone && (
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Phone className="w-3 h-3" />
+                            {(order.items[0] as any).sourcePhone}
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                   <p className="text-xs text-muted-foreground truncate">
                     {order.items

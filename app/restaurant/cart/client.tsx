@@ -243,28 +243,28 @@ export default function CartClient() {
   const hasAddress = selectedHostel && roomNumber;
 
   return (
-    <div className="bg-zinc-50 min-h-screen pb-20">
+    <div className="bg-background min-h-screen pb-20">
       <Script
         id="razorpay-checkout-js"
         src="https://checkout.razorpay.com/v1/checkout.js"
       />
 
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-[#1C45C2] backdrop-blur-md transition-all shadow-sm border-b border-white/5">
+      <div className="sticky top-0 z-20 bg-primary backdrop-blur-md transition-all shadow-sm border-b border-primary-foreground/5">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-white text-[#1C45C2] hover:bg-blue-50 active:scale-95 transition-all shadow-md"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-background text-primary hover:bg-accent active:scale-95 transition-all shadow-md"
             >
               <ArrowLeft className="w-5 h-5 font-bold" />
             </button>
-            <h1 className="text-xl font-bold text-white tracking-tight">
+            <h1 className="text-xl font-bold text-primary-foreground tracking-tight">
               Checkout
             </h1>
           </div>
           {userName && (
-            <span className="text-xs font-semibold bg-white/10 text-white px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/10">
+            <span className="text-xs font-semibold bg-primary-foreground/10 text-primary-foreground px-3 py-1.5 rounded-full backdrop-blur-sm border border-primary-foreground/10">
               {userName}
             </span>
           )}
@@ -274,20 +274,20 @@ export default function CartClient() {
       <div className="p-4 space-y-6 max-w-2xl mx-auto -mt-2">
         {/* Cart Items */}
         <div className="space-y-4">
-          <h2 className="text-sm font-bold tracking-widest text-zinc-500 uppercase flex items-center gap-2">
+          <h2 className="text-sm font-bold tracking-widest text-muted-foreground uppercase flex items-center gap-2">
             Order Summary
-            <span className="text-xs font-normal bg-zinc-100 px-2 py-0.5 rounded-full text-zinc-600">
+            <span className="text-xs font-normal bg-muted px-2 py-0.5 rounded-full text-muted-foreground">
               {cartItems.length} items
             </span>
           </h2>
 
           {cartItems.length === 0 ? (
-            <Card className="p-8 text-center text-muted-foreground border-dashed bg-zinc-50/50">
+            <Card className="p-8 text-center text-muted-foreground border-dashed bg-muted/50">
               Your cart is empty, Or refresh the page
               <Button
                 variant="link"
                 onClick={() => router.push("/restaurant")}
-                className="mt-2 text-[#1C45C2]"
+                className="mt-2 text-primary"
               >
                 Browse Snacks
               </Button>
@@ -297,9 +297,9 @@ export default function CartClient() {
               {cartItems.map((item) => (
                 <div
                   key={item.productId}
-                  className="p-3 bg-white rounded-2xl shadow-sm border border-zinc-100 flex gap-4 items-center relative overflow-hidden"
+                  className="p-3 bg-card rounded-2xl shadow-sm border border-border flex gap-4 items-center relative overflow-hidden"
                 >
-                  <div className="w-16 h-16 bg-zinc-100 rounded-xl flex items-center justify-center text-2xl overflow-hidden shrink-0 relative">
+                  <div className="w-16 h-16 bg-muted rounded-xl flex items-center justify-center text-2xl overflow-hidden shrink-0 relative">
                     {item.image ? (
                       <img
                         src={item.image}
@@ -307,19 +307,21 @@ export default function CartClient() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span>🍔</span>
+                      <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-600">
+                        {item.emoji || "🍽️"}
+                      </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-900 truncate">
+                    <h3 className="font-bold text-foreground truncate">
                       {item.name}
                     </h3>
-                    <p className="text-xs text-zinc-500 mb-1">
+                    <p className="text-xs text-muted-foreground mb-1">
                       {item.source === "STORE"
                         ? "Store Item"
                         : "Vending Machine"}
                     </p>
-                    <div className="font-bold text-[#1C45C2]">
+                    <div className="font-bold text-primary">
                       ₹{item.price * item.quantity}
                     </div>
                   </div>
@@ -328,25 +330,25 @@ export default function CartClient() {
                     {/* Delete Button */}
                     <button
                       onClick={() => removeFromCart(item.productId)}
-                      className="text-zinc-400 hover:text-red-500 transition-colors p-1"
+                      className="text-muted-foreground hover:text-destructive transition-colors p-1"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
 
                     {/* Quantity Controls */}
-                    <div className="flex items-center gap-3 bg-zinc-50 border border-zinc-100 p-1.5 rounded-xl">
+                    <div className="flex items-center gap-3 bg-muted border border-border p-1.5 rounded-xl">
                       <button
                         onClick={() => updateQuantity(item.productId, -1)}
-                        className="w-7 h-7 flex items-center justify-center bg-white rounded-lg shadow-sm border border-zinc-100 hover:bg-zinc-50 active:scale-95 transition-all text-zinc-600"
+                        className="w-7 h-7 flex items-center justify-center bg-background rounded-lg shadow-sm border border-border hover:bg-muted active:scale-95 transition-all text-muted-foreground"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
-                      <span className="text-sm font-bold w-4 text-center text-gray-900">
+                      <span className="text-sm font-bold w-4 text-center text-foreground">
                         {item.quantity}
                       </span>
                       <button
                         onClick={() => updateQuantity(item.productId, 1)}
-                        className="w-7 h-7 flex items-center justify-center bg-[#1C45C2] text-white rounded-lg shadow-sm hover:bg-blue-700 active:scale-95 transition-all"
+                        className="w-7 h-7 flex items-center justify-center bg-primary text-primary-foreground rounded-lg shadow-sm hover:bg-primary/90 active:scale-95 transition-all"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
@@ -362,32 +364,32 @@ export default function CartClient() {
         {cartItems.length > 0 && (
           <div className="space-y-4 animate-in fade-in-50 slide-in-from-bottom-4 delay-100">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold tracking-widest text-zinc-500 uppercase flex items-center gap-2">
+              <h2 className="text-sm font-bold tracking-widest text-muted-foreground uppercase flex items-center gap-2">
                 Delivery Address
               </h2>
               {/* If viewing, show Edit button */}
               {!isEditingAddress && hasAddress && (
                 <button
                   onClick={() => setIsEditingAddress(true)}
-                  className="text-xs font-bold text-[#1C45C2] flex items-center gap-1 hover:underline"
+                  className="text-xs font-bold text-primary flex items-center gap-1 hover:underline"
                 >
                   <Pencil className="w-3 h-3" /> Edit
                 </button>
               )}
             </div>
 
-            <Card className="p-5 shadow-sm border-zinc-100 rounded-2xl bg-white">
+            <Card className="p-5 shadow-sm border-border rounded-2xl bg-card">
               {isEditingAddress || !hasAddress ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-zinc-600 text-xs font-bold uppercase">
+                    <Label className="text-muted-foreground text-xs font-bold uppercase">
                       Select Hostel / Building
                     </Label>
                     <Select
                       value={selectedHostel}
                       onValueChange={setSelectedHostel}
                     >
-                      <SelectTrigger className="rounded-xl border-zinc-200 bg-zinc-50/50 h-10">
+                      <SelectTrigger className="rounded-xl border-border bg-muted/50 h-10">
                         <SelectValue placeholder="Select Hostel" />
                       </SelectTrigger>
                       <SelectContent>
@@ -400,14 +402,14 @@ export default function CartClient() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-zinc-600 text-xs font-bold uppercase">
+                    <Label className="text-muted-foreground text-xs font-bold uppercase">
                       Room Number
                     </Label>
                     <Input
                       value={roomNumber}
                       onChange={(e) => setRoomNumber(e.target.value)}
                       placeholder="e.g. 304, Block A"
-                      className="rounded-xl border-zinc-200 bg-zinc-50/50 h-10"
+                      className="rounded-xl border-border bg-muted/50 h-10"
                     />
                   </div>
                   <Button
@@ -416,21 +418,23 @@ export default function CartClient() {
                         setIsEditingAddress(false);
                       else toast.error("Please fill all fields");
                     }}
-                    className="w-full bg-zinc-900 text-white hover:bg-zinc-800 rounded-xl"
+                    className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-xl"
                   >
                     Save Address
                   </Button>
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                    <MapPin className="w-5 h-5 text-[#1C45C2]" />
+                  <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                    <MapPin className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-gray-900 line-clamp-1">
+                    <p className="text-sm font-bold text-foreground line-clamp-1">
                       {roomNumber}, {selectedHostel}
                     </p>
-                    <p className="text-xs text-zinc-500">Campus Delivery</p>
+                    <p className="text-xs text-muted-foreground">
+                      Campus Delivery
+                    </p>
                   </div>
                 </div>
               )}
@@ -441,42 +445,48 @@ export default function CartClient() {
         {/* Bill Details */}
         {cartItems.length > 0 && (
           <div className="space-y-4 animate-in fade-in-50 slide-in-from-bottom-4 delay-200">
-            <h2 className="text-sm font-bold tracking-widest text-zinc-500 uppercase">
+            <h2 className="text-sm font-bold tracking-widest text-muted-foreground uppercase">
               Bill Summary
             </h2>
-            <Card className="p-5 space-y-3 text-sm shadow-sm border-zinc-100 rounded-2xl bg-white">
+            <Card className="p-5 space-y-3 text-sm shadow-sm border-border rounded-2xl bg-card">
               <div className="flex justify-between">
-                <span className="text-zinc-500 font-medium">Item Total</span>
-                <span className="font-bold text-gray-900">₹{itemTotal}</span>
+                <span className="text-muted-foreground font-medium">
+                  Item Total
+                </span>
+                <span className="font-bold text-foreground">₹{itemTotal}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-500 font-medium">
+                <span className="text-muted-foreground font-medium">
                   Handling Charge
                 </span>
-                <span className="font-bold text-gray-900">₹{handlingFee}</span>
+                <span className="font-bold text-foreground">
+                  ₹{handlingFee}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-500 font-medium">Tax</span>
-                <span className="font-serif text-xs text-zinc-400 self-center mx-1 flex-1 border-b border-dashed border-zinc-200 relative -top-1"></span>
-                <span className="font-bold text-gray-900">₹{gst}</span>
+                <span className="text-muted-foreground font-medium">Tax</span>
+                <span className="font-serif text-xs text-muted-foreground self-center mx-1 flex-1 border-b border-dashed border-border relative -top-1"></span>
+                <span className="font-bold text-foreground">₹{gst}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-500 font-medium">Delivery Fee</span>
+                <span className="text-muted-foreground font-medium">
+                  Delivery Fee
+                </span>
                 <span
                   className={
                     deliveryFee === 0
                       ? "text-green-600 font-bold"
-                      : "font-bold text-gray-900"
+                      : "font-bold text-foreground"
                   }
                 >
                   {deliveryFee === 0 ? "FREE" : `₹${deliveryFee}`}
                 </span>
               </div>
-              <div className="border-t border-dashed border-zinc-200 pt-3 mt-1 flex justify-between">
-                <span className="font-extrabold text-base text-gray-900">
+              <div className="border-t border-dashed border-border pt-3 mt-1 flex justify-between">
+                <span className="font-extrabold text-base text-foreground">
                   Grand Total
                 </span>
-                <span className="font-extrabold text-base text-[#1C45C2]">
+                <span className="font-extrabold text-base text-primary">
                   ₹{grandTotal}
                 </span>
               </div>
@@ -487,10 +497,10 @@ export default function CartClient() {
         {/* Payment Method */}
         {cartItems.length > 0 && (
           <div className="space-y-4 animate-in fade-in-50 slide-in-from-bottom-4 delay-300">
-            <h2 className="text-sm font-bold tracking-widest text-zinc-500 uppercase">
+            <h2 className="text-sm font-bold tracking-widest text-muted-foreground uppercase">
               Payment Method
             </h2>
-            <Card className="p-4 shadow-sm border-zinc-100 rounded-2xl overflow-hidden">
+            <Card className="p-4 shadow-sm border-border rounded-2xl overflow-hidden">
               <RadioGroup
                 value={paymentMethod}
                 onValueChange={(v: any) => setPaymentMethod(v)}
@@ -499,28 +509,28 @@ export default function CartClient() {
                 <div
                   className={`flex items-center space-x-3 border-2 p-4 rounded-xl cursor-pointer transition-all ${
                     paymentMethod === "COD"
-                      ? "border-[#1C45C2] bg-blue-50/30"
-                      : "border-transparent bg-zinc-50 hover:bg-zinc-100"
+                      ? "border-primary bg-primary/10"
+                      : "border-transparent bg-muted hover:bg-muted/80"
                   }`}
                   onClick={() => setPaymentMethod("COD")}
                 >
                   <RadioGroupItem
                     value="COD"
                     id="cod"
-                    className="border-[#1C45C2] text-[#1C45C2]"
+                    className="border-primary text-primary"
                   />
                   <Label
                     htmlFor="cod"
                     className="flex-1 flex items-center gap-3 cursor-pointer"
                   >
-                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
                       <Banknote className="w-5 h-5 text-green-700" />
                     </div>
                     <div>
-                      <div className="font-bold text-gray-900 text-base">
+                      <div className="font-bold text-foreground text-base">
                         Pay on Delivery
                       </div>
-                      <div className="text-xs text-zinc-500 font-medium">
+                      <div className="text-xs text-muted-foreground font-medium">
                         Cash or UPI at door
                       </div>
                     </div>
@@ -530,28 +540,28 @@ export default function CartClient() {
                 <div
                   className={`flex items-center space-x-3 border-2 p-4 rounded-xl cursor-pointer transition-all ${
                     paymentMethod === "ONLINE"
-                      ? "border-[#1C45C2] bg-blue-50/30"
-                      : "border-transparent bg-zinc-50 hover:bg-zinc-100"
+                      ? "border-primary bg-primary/10"
+                      : "border-transparent bg-muted hover:bg-muted/80"
                   }`}
                   onClick={() => setPaymentMethod("ONLINE")}
                 >
                   <RadioGroupItem
                     value="ONLINE"
                     id="online"
-                    className="border-[#1C45C2] text-[#1C45C2]"
+                    className="border-primary text-primary"
                   />
                   <Label
                     htmlFor="online"
                     className="flex-1 flex items-center gap-3 cursor-pointer"
                   >
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                      <CreditCard className="w-5 h-5 text-[#1C45C2]" />
+                    <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                      <CreditCard className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <div className="font-bold text-gray-900 text-base">
+                      <div className="font-bold text-foreground text-base">
                         Pay Online
                       </div>
-                      <div className="text-xs text-zinc-500 font-medium">
+                      <div className="text-xs text-muted-foreground font-medium">
                         Cards, UPI, Netbanking
                       </div>
                     </div>
@@ -565,13 +575,13 @@ export default function CartClient() {
 
       {/* Footer */}
       {cartItems.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 mx-auto max-w-[480px] bg-white border-t border-zinc-100 p-4 pb-6 shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)] z-20">
+        <div className="fixed bottom-0 left-0 right-0 mx-auto max-w-[480px] bg-card border-t border-border p-4 pb-20 shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)] z-20">
           <div className="flex items-center justify-between gap-4 ">
             <div className="flex flex-col">
-              <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Total to Pay
               </p>
-              <p className="text-2xl font-extrabold text-[#1C45C2]">
+              <p className="text-2xl font-extrabold text-primary">
                 ₹{grandTotal}
               </p>
             </div>
@@ -579,7 +589,7 @@ export default function CartClient() {
               size="lg"
               onClick={handlePlaceOrder}
               disabled={loading}
-              className="bg-[#1C45C2] hover:bg-blue-700 text-white px-8 h-12 rounded-xl font-bold text-base shadow-xl disabled:opacity-70 flex-1 max-w-[200px]"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-12 rounded-xl font-bold text-base shadow-xl disabled:opacity-70 flex-1 max-w-[200px]"
             >
               {loading ? (
                 <>

@@ -7,6 +7,13 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -96,20 +103,18 @@ function VendingMachineForm({
         </div>
         <div>
           <Label htmlFor="hostel">Hostel/Building</Label>
-          <select
-            id="hostel"
-            name="hostel"
-            defaultValue={machine?.hostel || ""}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            required
-          >
-            <option value="">Select a hostel...</option>
-            {hostels.map((h) => (
-              <option key={h} value={h}>
-                {h}
-              </option>
-            ))}
-          </select>
+          <Select name="hostel" defaultValue={machine?.hostel || ""} required>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a hostel..." />
+            </SelectTrigger>
+            <SelectContent>
+              {hostels.map((h) => (
+                <SelectItem key={h} value={h}>
+                  {h}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div>
           <Label htmlFor="username">Username</Label>

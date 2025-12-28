@@ -29,7 +29,7 @@ export function GlobalCartFooter() {
     <div className="fixed bottom-20 left-4 right-4 z-50 animate-in slide-in-from-bottom-4 fade-in">
       <div
         onClick={() => router.push("/restaurant/cart")}
-        className="bg-[#1C45C2] max-w-[480px] text-white rounded-xl shadow-2xl p-3.5 flex items-center justify-between cursor-pointer hover:scale-[1.01] active:scale-[0.98] transition-all max-w-2xl mx-auto ring-1 ring-white/10"
+        className="bg-primary max-w-[480px] text-primary-foreground rounded-xl shadow-2xl p-3.5 flex items-center justify-between cursor-pointer hover:scale-[1.01] active:scale-[0.98] transition-all max-w-2xl mx-auto ring-1 ring-white/10"
       >
         <div className="flex flex-col pl-1">
           <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">

@@ -3,6 +3,13 @@
 import { useState, useTransition, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -134,27 +141,30 @@ function ProductForm({
         </div>
         <div>
           <Label htmlFor="availability">Availability</Label>
-          <select
-            id="availability"
+          <Select
             name="availability"
             defaultValue={product?.availability || "inStock"}
-            className="h-9 rounded-md border px-3 w-full"
           >
-            <option value="inStock">In Stock</option>
-            <option value="outOfStock">Out of Stock</option>
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Availability" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="inStock">In Stock</SelectItem>
+              <SelectItem value="outOfStock">Out of Stock</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div>
           <Label htmlFor="type">Type</Label>
-          <select
-            id="type"
-            name="type"
-            defaultValue={product?.type || "veg"}
-            className="h-9 rounded-md border px-3 w-full"
-          >
-            <option value="veg">Veg</option>
-            <option value="non-veg">Non-Veg</option>
-          </select>
+          <Select name="type" defaultValue={product?.type || "veg"}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="veg">Veg</SelectItem>
+              <SelectItem value="non-veg">Non-Veg</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <div>

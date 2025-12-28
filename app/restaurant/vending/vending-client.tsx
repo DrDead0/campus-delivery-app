@@ -101,13 +101,6 @@ export default function VendingClient({ initialMachines }: VendingClientProps) {
           )}
         </div>
       </div>
-
-      {/* Dynamic Indicator */}
-      {lastUpdated && (
-        <div className="text-center py-4 text-[10px] text-muted-foreground opacity-50">
-          Live updates active • Last updated: {lastUpdated.toLocaleTimeString()}
-        </div>
-      )}
     </div>
   );
 }

@@ -101,9 +101,9 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50/50 p-4 font-sans">
-      <div className="w-full max-w-sm bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8">
-        <h1 className="text-3xl font-bold text-center mb-6 text-black">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 font-sans">
+      <div className="w-full max-w-sm bg-card rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none dark:border p-8">
+        <h1 className="text-3xl font-bold text-center mb-6 text-foreground">
           Create Account
         </h1>
 
@@ -119,7 +119,7 @@ export default function RegisterPage() {
               placeholder="Full Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="rounded-lg border-blue-400 focus:ring-blue-400 focus:border-blue-500 h-10 px-4"
+              className="rounded-lg border-input focus:ring-primary focus:border-primary h-10 px-4"
               required
             />
           </div>
@@ -135,7 +135,7 @@ export default function RegisterPage() {
               placeholder="example@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-lg border-blue-400 focus:ring-blue-400 focus:border-blue-500 h-10 px-4"
+              className="rounded-lg border-input focus:ring-primary focus:border-primary h-10 px-4"
               required
             />
           </div>
@@ -145,9 +145,9 @@ export default function RegisterPage() {
             <Label htmlFor="phone" className="text-sm font-medium ml-1">
               Mobile Number
             </Label>
-            <div className="flex items-center border border-blue-400 rounded-lg overflow-hidden h-10 focus-within:ring-2 focus-within:ring-blue-400 focus-within:border-blue-500">
-              <div className="flex items-center gap-2 px-3 border-r border-gray-200 bg-gray-50/50 h-full">
-                <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+            <div className="flex items-center border border-input rounded-lg overflow-hidden h-10 focus-within:ring-2 focus-within:ring-primary focus-within:border-primary">
+              <div className="flex items-center gap-2 px-3 border-r border-border bg-muted/50 h-full">
+                <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
                   +91
                 </span>
               </div>
@@ -157,7 +157,7 @@ export default function RegisterPage() {
                 placeholder="12345 67890"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full h-full px-3 outline-none text-sm bg-transparent"
+                className="w-full h-full px-3 outline-none text-sm bg-transparent placeholder:text-muted-foreground"
                 required
               />
             </div>
@@ -168,7 +168,7 @@ export default function RegisterPage() {
             <Label className="text-sm font-medium ml-1">Address</Label>
             <div className="flex gap-2">
               <Select onValueChange={setAddress} required>
-                <SelectTrigger className="w-3/5 rounded-lg border-blue-400 focus:ring-blue-400 focus:border-blue-500 h-10">
+                <SelectTrigger className="w-3/5 rounded-lg border-input focus:ring-primary focus:border-primary h-10">
                   <SelectValue placeholder="Hostel" />
                 </SelectTrigger>
                 <SelectContent>
@@ -184,7 +184,7 @@ export default function RegisterPage() {
                 placeholder="Room No"
                 value={roomNumber}
                 onChange={(e) => setRoomNumber(e.target.value)}
-                className="w-2/5 rounded-lg border-blue-400 focus:ring-blue-400 focus:border-blue-500 h-10 px-4"
+                className="w-2/5 rounded-lg border-input focus:ring-primary focus:border-primary h-10 px-4"
                 required
               />
             </div>
@@ -202,7 +202,7 @@ export default function RegisterPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="rounded-lg border-blue-400 focus:ring-blue-400 focus:border-blue-500 h-10 px-4 pr-10 tracking-widest"
+                className="rounded-lg border-input focus:ring-primary focus:border-primary h-10 px-4 pr-10 tracking-widest"
                 required
               />
               <button
@@ -233,7 +233,7 @@ export default function RegisterPage() {
               placeholder="••••••••"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="rounded-lg border-blue-400 focus:ring-blue-400 focus:border-blue-500 h-10 px-4 tracking-widest"
+              className="rounded-lg border-input focus:ring-primary focus:border-primary h-10 px-4 tracking-widest"
               required
             />
             {confirmPassword && password !== confirmPassword && (
@@ -244,15 +244,16 @@ export default function RegisterPage() {
           </div>
 
           <div className="pt-2 text-center">
-            <p className="text-[10px] text-gray-500 mb-4 px-4 leading-tight">
+            <p className="text-[10px] text-muted-foreground mb-4 px-4 leading-tight">
               By continuing, you agree to{" "}
-              <span className="font-bold text-black">Terms of Use</span> and{" "}
-              <span className="font-bold text-black">Privacy Policy</span>.
+              <span className="font-bold text-foreground">Terms of Use</span>{" "}
+              and{" "}
+              <span className="font-bold text-foreground">Privacy Policy</span>.
             </p>
 
             <Button
               type="submit"
-              className="w-3/4 rounded-full h-12 text-lg font-medium bg-[#378CE7] hover:bg-[#2F7BC7] text-white shadow-md shadow-blue-200 mb-2"
+              className="w-3/4 rounded-full h-12 text-lg font-medium bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 mb-2"
               disabled={loading}
             >
               {loading ? "Signing Up..." : "Sign Up"}
@@ -262,7 +263,7 @@ export default function RegisterPage() {
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="text-[#378CE7] hover:underline font-medium"
+                className="text-primary hover:underline font-medium"
               >
                 Log In
               </Link>
