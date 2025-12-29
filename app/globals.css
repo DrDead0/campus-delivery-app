@@ -157,7 +157,7 @@ a,
   scrollbar-width: none;
 }
 .text-inner-shadow {
-  background-color: #0076ca;
+  background-color: #0095ff;
   color: transparent;
   text-shadow: 2px 2px 3px rgba(75, 75, 75, 0.5);
   -webkit-background-clip: text;

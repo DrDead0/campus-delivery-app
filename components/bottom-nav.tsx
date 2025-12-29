@@ -18,7 +18,7 @@ export function BottomNav({ activeScreen, onScreenChange }: BottomNavProps) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border max-w-[480px] mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border max-w-[480px] mx-auto z-50">
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
           const Icon = item.icon;

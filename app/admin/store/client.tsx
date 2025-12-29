@@ -21,6 +21,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Plus, Trash2, MapPin, Package } from "lucide-react";
 import { hostels } from "@/lib/data";
@@ -42,18 +49,18 @@ export function StoreDashboardClient({
       {/* Search/Header area is handled by parent page or layout, focusing on dashboard content */}
 
       {/* Store Identity Section */}
-      <section className="relative group rounded-xl overflow-hidden bg-white shadow-sm border">
-        <div className="h-32 bg-gray-900/10">
+      <section className="relative group rounded-xl overflow-hidden bg-card shadow-sm border border-border">
+        <div className="h-32 bg-muted/40">
           {/* Cover image placeholder or actual cover if we had one */}
         </div>
         <div className="px-6 pb-6">
           <div className="flex flex-col sm:flex-row gap-4 items-start -mt-12">
             <div className="relative">
-              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl bg-white p-1 border shadow-sm">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl bg-card p-1 border border-border shadow-sm">
                 <img
                   src={data.image || "/placeholder.jpg"}
                   alt={data.name || data.names}
-                  className="w-full h-full object-cover rounded-lg bg-gray-100"
+                  className="w-full h-full object-cover rounded-lg bg-muted"
                 />
               </div>
             </div>
@@ -61,10 +68,10 @@ export function StoreDashboardClient({
             <div className="flex-1 mt-12 sm:mt-14 space-y-1">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold text-foreground">
                     {data.name || data.names}
                   </h2>
-                  <div className="flex items-center text-sm text-gray-500 mt-1">
+                  <div className="flex items-center text-sm text-muted-foreground mt-1">
                     <MapPin className="w-4 h-4 mr-1" />
                     {data.location || "No location set"}
                   </div>
@@ -81,7 +88,7 @@ export function StoreDashboardClient({
               </div>
 
               {type === "store" && (
-                <p className="text-gray-600 max-w-2xl text-sm mt-3">
+                <p className="text-muted-foreground max-w-2xl text-sm mt-3">
                   {data.description || "No description provided."}
                 </p>
               )}
@@ -91,7 +98,7 @@ export function StoreDashboardClient({
       </section>
 
       {/* Tab Navigation */}
-      <div className="flex items-center gap-2 border-b pb-2">
+      <div className="flex items-center gap-2 border-b border-border pb-2">
         <Button
           variant={activeTab === "orders" ? "default" : "ghost"}
           onClick={() => setActiveTab("orders")}
@@ -242,22 +249,23 @@ function OrdersManager({
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
           <h3 className="text-xl font-semibold">Recent Orders</h3>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Manage incoming orders and update their status.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <select
-            className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            value={timeFilter}
-            onChange={(e) => setTimeFilter(e.target.value)}
-          >
-            <option value="all">All Time</option>
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="custom">Custom Range</option>
-          </select>
+          <Select value={timeFilter} onValueChange={setTimeFilter}>
+            <SelectTrigger className="w-[140px] h-9">
+              <SelectValue placeholder="Select range" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="week">This Week</SelectItem>
+              <SelectItem value="month">This Month</SelectItem>
+              <SelectItem value="custom">Custom Range</SelectItem>
+            </SelectContent>
+          </Select>
 
           {timeFilter === "custom" && (
             <div className="flex items-center gap-2 animate-in slide-in-from-left-2 fade-in">
@@ -267,7 +275,7 @@ function OrdersManager({
                 value={customStart}
                 onChange={(e) => setCustomStart(e.target.value)}
               />
-              <span className="text-gray-400">-</span>
+              <span className="text-muted-foreground">-</span>
               <Input
                 type="date"
                 className="h-9 w-32"
@@ -276,16 +284,17 @@ function OrdersManager({
               />
             </div>
           )}
-          <select
-            className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-          >
-            <option value="date-desc">Newest First</option>
-            <option value="date-asc">Oldest First</option>
-            <option value="price-desc">Price: High to Low</option>
-            <option value="price-asc">Price: Low to High</option>
-          </select>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-[160px] h-9">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date-desc">Newest First</SelectItem>
+              <SelectItem value="date-asc">Oldest First</SelectItem>
+              <SelectItem value="price-desc">Price: High to Low</SelectItem>
+              <SelectItem value="price-asc">Price: Low to High</SelectItem>
+            </SelectContent>
+          </Select>
           <Button variant="outline" onClick={() => router.refresh()} size="sm">
             Refresh
           </Button>
@@ -294,13 +303,18 @@ function OrdersManager({
 
       <div className="grid gap-4">
         {filteredOrders.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 border border-dashed rounded-lg">
+          <div className="text-center py-8 text-muted-foreground border border-dashed border-border rounded-lg">
             No orders found matching your filters.
           </div>
         ) : (
           filteredOrders.map((order) => {
-            const storeTotal = order.items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
-            const isSettled = order.items.length > 0 && order.items.every((item: any) => item.isSettled);
+            const storeTotal = order.items.reduce(
+              (acc: number, item: any) => acc + item.price * item.quantity,
+              0
+            );
+            const isSettled =
+              order.items.length > 0 &&
+              order.items.every((item: any) => item.isSettled);
 
             return (
               <Card key={order._id} className="overflow-hidden">
@@ -308,31 +322,37 @@ function OrdersManager({
                   <div className="flex flex-col md:flex-row justify-between gap-4">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                        <span className="font-mono text-sm bg-muted text-muted-foreground px-2 py-1 rounded">
                           #{order._id.slice(-6)}
                         </span>
                         <Badge
                           variant={
                             order.status === "DELIVERED" ||
-                              order.status === "COMPLETED"
+                            order.status === "COMPLETED"
                               ? "default"
                               : order.status === "CANCELLED"
-                                ? "destructive"
-                                : "secondary"
+                              ? "destructive"
+                              : "secondary"
                           }
                         >
                           {order.status}
                         </Badge>
 
-                        <Badge
-                          variant="outline"
-                          className={isSettled ? "bg-green-50 text-green-700 border-green-200" : "bg-yellow-50 text-yellow-700 border-yellow-200"}
-                        >
-                          {isSettled ? "Settled" : "Settlement Pending"}
-                        </Badge>
+                        {order.status !== "CANCELLED" && (
+                          <Badge
+                            variant="outline"
+                            className={
+                              isSettled
+                                ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800"
+                                : "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800"
+                            }
+                          >
+                            {isSettled ? "Settled" : "Settlement Pending"}
+                          </Badge>
+                        )}
 
                         <span
-                          className="text-sm text-gray-500"
+                          className="text-sm text-muted-foreground"
                           suppressHydrationWarning
                         >
                           {new Date(order.createdAt).toLocaleString()}
@@ -346,27 +366,38 @@ function OrdersManager({
                               {item.quantity}x
                             </span>
                             <span>{item.name}</span>
-                            <span className="text-gray-400">({item.source})</span>
+                            <span className="text-muted-foreground">
+                              ({item.source})
+                            </span>
                           </div>
                         ))}
                       </div>
-                      <div className="font-bold">Total Earnings: ₹{storeTotal}</div>
+                      <div className="font-bold">
+                        Total Earnings: ₹{storeTotal}
+                      </div>
                       {order.address && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           Deliver to: {order.address}
                         </div>
                       )}
-
                     </div>
 
                     <div className="flex flex-row md:flex-col gap-2 justify-center min-w-[120px]">
-                      {(order.status === "PENDING" || order.status === "CONFIRMED") && (
+                      {(order.status === "PENDING" ||
+                        order.status === "CONFIRMED") && (
                         <Button
                           size="sm"
                           variant="destructive"
                           onClick={async () => {
-                            if (!confirm("Are you sure you want to cancel this order?")) return;
-                            const { cancelOrderAction } = await import("@/app/actions/order-actions");
+                            if (
+                              !confirm(
+                                "Are you sure you want to cancel this order?"
+                              )
+                            )
+                              return;
+                            const { cancelOrderAction } = await import(
+                              "@/app/actions/order-actions"
+                            );
                             const res = await cancelOrderAction(order._id);
                             if (res.ok) {
                               toast.success("Order cancelled");
@@ -383,7 +414,8 @@ function OrdersManager({
                       {order.status !== "DELIVERED" &&
                         order.status !== "CANCELLED" && (
                           <>
-                            {order.status !== "PREPARING" && (
+                            {(order.status === "PENDING" ||
+                              order.status === "CONFIRMED") && (
                               <Button
                                 size="sm"
                                 onClick={() =>
@@ -393,16 +425,30 @@ function OrdersManager({
                                 Prepare
                               </Button>
                             )}
-                            <Button
-                              size="sm"
-                              variant="default"
-                              className="bg-green-600 hover:bg-green-700"
-                              onClick={() =>
-                                handleStatusUpdate(order._id, "DELIVERED")
-                              }
-                            >
-                              Ready / Deliver
-                            </Button>
+                            {order.status === "PREPARING" && (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="bg-blue-600 hover:bg-blue-700"
+                                onClick={() =>
+                                  handleStatusUpdate(order._id, "READY")
+                                }
+                              >
+                                Ready
+                              </Button>
+                            )}
+                            {order.status === "READY" && (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="bg-green-600 hover:bg-green-700"
+                                onClick={() =>
+                                  handleStatusUpdate(order._id, "DELIVERED")
+                                }
+                              >
+                                Deliver
+                              </Button>
+                            )}
                           </>
                         )}
                     </div>
@@ -461,34 +507,33 @@ function DetailsForm({
 
       <div>
         <Label htmlFor="type-select">Type</Label>
-        <select
-          id="type-select"
-          name="storeType"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          defaultValue={data.type || "non-veg"}
-        >
-          <option value="veg">Veg</option>
-          <option value="non-veg">Non-Veg</option>
-          <option value="both">Both</option>
-        </select>
+        <Select name="storeType" defaultValue={data.type || "non-veg"}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="veg">Veg</SelectItem>
+            <SelectItem value="non-veg">Non-Veg</SelectItem>
+            <SelectItem value="both">Both</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {type !== "store" && (
         <div>
           <Label htmlFor="hostel-select">Hostel</Label>
-          <select
-            id="hostel-select"
-            name="hostel"
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            defaultValue={data.hostel || ""}
-          >
-            <option value="">Select Hostel...</option>
-            {hostels.map((h) => (
-              <option key={h} value={h}>
-                {h}
-              </option>
-            ))}
-          </select>
+          <Select name="hostel" defaultValue={data.hostel || ""}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Hostel..." />
+            </SelectTrigger>
+            <SelectContent>
+              {hostels.map((h) => (
+                <SelectItem key={h} value={h}>
+                  {h}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
       {type === "store" && (
@@ -629,12 +674,12 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
             image: newImage,
             productId: item.productId
               ? {
-                ...item.productId,
-                name: newName,
-                Description: newDesc,
-                price: newPrice,
-                image: newImage,
-              }
+                  ...item.productId,
+                  name: newName,
+                  Description: newDesc,
+                  price: newPrice,
+                  image: newImage,
+                }
               : undefined,
             availability:
               type === "store" ? newAvailability : item.availability,
@@ -664,7 +709,7 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-xl font-semibold">Products & Inventory</h3>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Manage your store's catalog and stock availability.
           </p>
         </div>
@@ -675,10 +720,12 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
       </div>
 
       {items.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed">
-          <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-gray-900">No products yet</h3>
-          <p className="text-gray-500 mb-4">
+        <div className="text-center py-12 bg-muted/40 rounded-lg border border-dashed border-border">
+          <Package className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+          <h3 className="text-lg font-medium text-foreground">
+            No products yet
+          </h3>
+          <p className="text-muted-foreground mb-4">
             Start by adding your first product to the store.
           </p>
           <Button onClick={handleAdd} variant="outline">
@@ -717,7 +764,7 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden shrink-0 border relative">
+                  <div className="w-20 h-20 bg-muted/50 rounded-xl flex items-center justify-center overflow-hidden shrink-0 border border-border relative">
                     <img
                       src={image}
                       alt={name}
@@ -725,7 +772,7 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
                     />
                     {isOutOfStock && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <span className="bg-red-500 text-white text-[10px] font-bold px-1 rounded">
+                        <span className="bg-destructive text-destructive-foreground text-[10px] font-bold px-1 rounded">
                           OUT
                         </span>
                       </div>
@@ -758,18 +805,19 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
                         ) : (
                           <Badge
                             variant={isOutOfStock ? "destructive" : "secondary"}
-                            className={`capitalize text-[10px] h-5 px-1.5 ${!isOutOfStock && quantity <= 10
-                              ? "bg-orange-100 text-orange-700 hover:bg-orange-100"
-                              : !isOutOfStock
-                                ? "bg-green-100 text-green-700 hover:bg-green-100"
+                            className={`capitalize text-[10px] h-5 px-1.5 ${
+                              !isOutOfStock && quantity <= 10
+                                ? "bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/20"
+                                : !isOutOfStock
+                                ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/20"
                                 : ""
-                              }`}
+                            }`}
                           >
                             {isOutOfStock
                               ? "Out of Stock"
                               : quantity <= 10
-                                ? "Low Stock"
-                                : `In Stock: ${quantity}`}
+                              ? "Low Stock"
+                              : `In Stock: ${quantity}`}
                           </Badge>
                         )}
                       </div>
@@ -816,21 +864,24 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="prod-type">Type</Label>
-                  <select
-                    id="prod-type"
+                  <Select
                     name="productType"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     defaultValue={
                       isNew
                         ? "veg"
                         : editingItem.productId?.type ||
-                        editingItem.type ||
-                        "veg"
+                          editingItem.type ||
+                          "veg"
                     }
                   >
-                    <option value="veg">Veg</option>
-                    <option value="non-veg">Non-Veg</option>
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="veg">Veg</SelectItem>
+                      <SelectItem value="non-veg">Non-Veg</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -844,8 +895,8 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
                     isNew
                       ? ""
                       : editingItem.productId?.Description ||
-                      editingItem.description ||
-                      ""
+                        editingItem.description ||
+                        ""
                   }
                 />
               </div>
@@ -883,15 +934,18 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
                 {type === "store" ? (
                   <div>
                     <Label htmlFor="availability">Availability</Label>
-                    <select
-                      id="availability"
+                    <Select
                       name="availability"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       defaultValue={editingItem?.availability || "inStock"}
                     >
-                      <option value="inStock">In Stock</option>
-                      <option value="outOfStock">Out of Stock</option>
-                    </select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Availability" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="inStock">In Stock</SelectItem>
+                        <SelectItem value="outOfStock">Out of Stock</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 ) : (
                   <div>

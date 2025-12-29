@@ -38,21 +38,29 @@ export async function createProductAction(formData: FormData) {
     // Add product to selected vending machines
     if (vendingMachines.length > 0) {
       for (const machineId of vendingMachines) {
-        const machine = await VendingMachine.findById(machineId);
-        if (machine) {
-          // Check if product already exists in this machine
-          const existingItem = machine.items.find(
-            (item: any) =>
-              item.productId &&
-              item.productId.toString() === product._id.toString()
-          );
-          if (!existingItem) {
-            machine.items.push({
-              productId: product._id,
-              quantity: 0, // Start with 0 stock, admin can update later
-            });
-            await machine.save();
+        try {
+          const machine = await VendingMachine.findById(machineId);
+          if (machine) {
+            if (!machine.items) machine.items = [];
+            // Check if product already exists in this machine
+            const existingItem = machine.items.find(
+              (item: any) =>
+                item.productId &&
+                item.productId.toString() === product._id.toString()
+            );
+            if (!existingItem) {
+              machine.items.push({
+                productId: product._id,
+                quantity: 20, // Start with 20 stock by default
+              });
+              await machine.save();
+            }
           }
+        } catch (innerErr) {
+          console.error(
+            `Failed to add product to machine ${machineId}`,
+            innerErr
+          );
         }
       }
     }
@@ -60,21 +68,26 @@ export async function createProductAction(formData: FormData) {
     // Add product to selected stores
     if (stores.length > 0) {
       for (const storeId of stores) {
-        const store = await Store.findById(storeId);
-        if (store) {
-          // Check if product already exists in this store
-          const existingItem = store.items.find(
-            (item: any) =>
-              item.productId &&
-              item.productId.toString() === product._id.toString()
-          );
-          if (!existingItem) {
-            store.items.push({
-              productId: product._id,
-              // Store specific defaults
-            });
-            await store.save();
+        try {
+          const store = await Store.findById(storeId);
+          if (store) {
+            if (!store.items) store.items = [];
+            // Check if product already exists in this store
+            const existingItem = store.items.find(
+              (item: any) =>
+                item.productId &&
+                item.productId.toString() === product._id.toString()
+            );
+            if (!existingItem) {
+              store.items.push({
+                productId: product._id,
+                // Store specific defaults
+              });
+              await store.save();
+            }
           }
+        } catch (innerErr) {
+          console.error(`Failed to add product to store ${storeId}`, innerErr);
         }
       }
     }
@@ -119,19 +132,24 @@ export async function updateProductAction(formData: FormData) {
     // Update product in selected vending machines
     if (vendingMachines.length > 0) {
       for (const machineId of vendingMachines) {
-        const machine = await VendingMachine.findById(machineId);
-        if (machine) {
-          // Check if product already exists in this machine
-          const existingItem = machine.items.find(
-            (item: any) => item.productId && item.productId.toString() === id
-          );
-          if (!existingItem) {
-            machine.items.push({
-              productId: id,
-              quantity: 0, // Start with 0 stock, admin can update later
-            });
-            await machine.save();
+        try {
+          const machine = await VendingMachine.findById(machineId);
+          if (machine) {
+            if (!machine.items) machine.items = [];
+            // Check if product already exists in this machine
+            const existingItem = machine.items.find(
+              (item: any) => item.productId && item.productId.toString() === id
+            );
+            if (!existingItem) {
+              machine.items.push({
+                productId: id,
+                quantity: 20, // Start with 20 stock by default
+              });
+              await machine.save();
+            }
           }
+        } catch (innerErr) {
+          console.error(`Failed to update machine ${machineId}`, innerErr);
         }
       }
     }
@@ -139,18 +157,23 @@ export async function updateProductAction(formData: FormData) {
     // Update product in selected stores
     if (stores.length > 0) {
       for (const storeId of stores) {
-        const store = await Store.findById(storeId);
-        if (store) {
-          // Check if product already exists in this store
-          const existingItem = store.items.find(
-            (item: any) => item.productId && item.productId.toString() === id
-          );
-          if (!existingItem) {
-            store.items.push({
-              productId: id,
-            });
-            await store.save();
+        try {
+          const store = await Store.findById(storeId);
+          if (store) {
+            if (!store.items) store.items = [];
+            // Check if product already exists in this store
+            const existingItem = store.items.find(
+              (item: any) => item.productId && item.productId.toString() === id
+            );
+            if (!existingItem) {
+              store.items.push({
+                productId: id,
+              });
+              await store.save();
+            }
           }
+        } catch (innerErr) {
+          console.error(`Failed to update store ${storeId}`, innerErr);
         }
       }
     }

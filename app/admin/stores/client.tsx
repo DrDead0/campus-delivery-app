@@ -3,6 +3,13 @@
 import { useState, useTransition } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import Link from "next/link";
@@ -89,15 +96,15 @@ function StoreForm({ store, onClose, onSave }: StoreFormProps) {
       </div>
       <div>
         <Label htmlFor="type">Type</Label>
-        <select
-          id="type"
-          name="type"
-          defaultValue={store?.type || "non-veg"}
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          <option value="veg">Veg</option>
-          <option value="non-veg">Non-Veg</option>
-        </select>
+        <Select name="type" defaultValue={store?.type || "non-veg"}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="veg">Veg</SelectItem>
+            <SelectItem value="non-veg">Non-Veg</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div>

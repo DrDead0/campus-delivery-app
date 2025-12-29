@@ -11,6 +11,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import {
   restockVendingItemAction,
@@ -112,40 +119,44 @@ export function VendingMachinesClient({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="machine">Select Machine</Label>
-              <select
-                id="machine"
+              <Select
                 value={selectedMachine}
-                onChange={(e) => {
-                  setSelectedMachine(e.target.value);
+                onValueChange={(val) => {
+                  setSelectedMachine(val);
                   setSelectedProduct("");
                 }}
-                className="h-9 rounded-md border px-3 w-full"
               >
-                <option value="">Choose a machine...</option>
-                {machines.map((m) => (
-                  <option key={m._id} value={m._id}>
-                    {m.names} ({m.location}, {m.hostel})
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a machine..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {machines.map((m) => (
+                    <SelectItem key={m._id} value={m._id}>
+                      {m.names} ({m.location}, {m.hostel})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {currentMachine && (
               <div>
                 <Label htmlFor="product">Select Product</Label>
-                <select
-                  id="product"
+                <Select
                   value={selectedProduct}
-                  onChange={(e) => setSelectedProduct(e.target.value)}
-                  className="h-9 rounded-md border px-3 w-full"
+                  onValueChange={setSelectedProduct}
                 >
-                  <option value="">Choose a product...</option>
-                  {availableProducts.map((product: any) => (
-                    <option key={product._id} value={product._id}>
-                      {product.name} - ₹{product.price}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a product..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableProducts.map((product: any) => (
+                      <SelectItem key={product._id} value={product._id}>
+                        {product.name} - ₹{product.price}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {availableProducts.length === 0 && (
                   <p className="text-xs text-muted-foreground mt-1">
                     No products added to this machine yet. Add products via
@@ -310,15 +321,18 @@ export function VendingMachinesClient({
                     </div>
                     <div>
                       <Label htmlFor="type">Type</Label>
-                      <select
-                        id="type"
+                      <Select
                         name="type"
                         defaultValue={editingMachine.type || "non-veg"}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       >
-                        <option value="veg">Veg</option>
-                        <option value="non-veg">Non-Veg</option>
-                      </select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="veg">Veg</SelectItem>
+                          <SelectItem value="non-veg">Non-Veg</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
                       <Label htmlFor="username">Username</Label>

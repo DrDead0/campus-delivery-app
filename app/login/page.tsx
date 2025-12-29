@@ -46,9 +46,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50/50 p-4 font-sans">
-      <div className="w-full max-w-sm bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8">
-        <h1 className="text-3xl font-bold text-center mb-8 text-black">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 font-sans">
+      <div className="w-full max-w-sm bg-card rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none dark:border p-8">
+        <h1 className="text-3xl font-bold text-center mb-8 text-foreground">
           Welcome
         </h1>
 
@@ -63,7 +63,7 @@ export default function LoginPage() {
               placeholder="Email@Email.Com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-lg border-blue-400 focus:ring-blue-400 focus:border-blue-500 h-10 px-4"
+              className="rounded-lg border-input focus:ring-primary focus:border-primary h-10 px-4"
               required
             />
           </div>
@@ -79,7 +79,7 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="rounded-lg border-blue-400 focus:ring-blue-400 focus:border-blue-500 h-10 px-4 pr-10 tracking-widest"
+                className="rounded-lg border-input focus:ring-primary focus:border-primary h-10 px-4 pr-10 tracking-widest"
                 required
               />
               <button
@@ -100,7 +100,7 @@ export default function LoginPage() {
           <div className="pt-2 space-y-4">
             <Button
               type="submit"
-              className="w-full rounded-full h-12 text-lg font-medium bg-[#378CE7] hover:bg-[#2F7BC7] text-white shadow-md shadow-blue-200"
+              className="w-full rounded-full h-12 text-lg font-medium bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20"
               disabled={loading}
             >
               {loading ? "Logging in..." : "Login"}
@@ -109,7 +109,7 @@ export default function LoginPage() {
             <div className="text-center">
               <Link
                 href="/forgot-password"
-                className="text-xs font-bold text-[#003C43] hover:underline"
+                className="text-xs font-bold text-muted-foreground hover:text-primary hover:underline"
               >
                 Forgot Password?
               </Link>
@@ -118,7 +118,7 @@ export default function LoginPage() {
 
           <div className="text-center text-xs text-muted-foreground mt-4">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-[#378CE7] hover:underline">
+            <Link href="/register" className="text-primary hover:underline">
               register
             </Link>
           </div>

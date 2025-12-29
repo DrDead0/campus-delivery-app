@@ -1,13 +1,12 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ChevronRight, MapPin, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
+import { use, useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { FoodTypeBadge } from "@/components/store-list";
-import { useCart } from "@/components/cart-context";
+import { toast } from "sonner";
+import { useCart } from "@/app/context/CartContext";
+import { DeliveryScreen } from "@/components/delivery-screen";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart } from "lucide-react";
 
 export default function VendingMachineDetails({
   params,
@@ -20,31 +19,35 @@ export default function VendingMachineDetails({
   const [machine, setMachine] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [ordering, setOrdering] = useState(false);
+
+  const {
+    cartItems,
+    addToCart,
+    updateQuantity,
+    totals,
+    selectedHostel,
+    setSelectedHostel,
+    roomNumber,
+    setRoomNumber,
+  } = useCart();
 
   useEffect(() => {
     const loadMachine = async () => {
       try {
-        // Dynamically import the action to avoid build/serialization issues if any
         const { getVendingMachineById } = await import("../actions");
         const data = await getVendingMachineById(id);
 
         if (data) {
           setMachine(data);
-          // Transform items to match the structure expected by UI
-          // The schema has items: [{ productId: Product, ... }]
-          // We want to flatten this for easier display
           const productsList = data.items
-            .filter((item: any) => item.productId) // Ensure product exists
+            .filter((item: any) => item.productId)
             .map((item: any) => {
-              // Check availablity based on quantity
               const quantity = item.quantity ?? 0;
               const availability = quantity > 0 ? "inStock" : "outOfStock";
-
               return {
                 ...item.productId,
                 availability,
-                quantity, // Pass quantity through if needed
+                quantity,
                 price: item.price || item.productId.price,
               };
             });
@@ -58,187 +61,104 @@ export default function VendingMachineDetails({
         setLoading(false);
       }
     };
-    const intervalId = setInterval(loadMachine, 2000); // Poll every 2 seconds
+    const intervalId = setInterval(loadMachine, 2000);
     loadMachine();
 
     return () => clearInterval(intervalId);
   }, [id]);
 
-  const getAvailabilityStatus = (availability: string) => {
-    // This helper might be unused now if we inline logic, but keeping for safety or removing if confirmed unused.
-    // Logic moved inline below.
-    return { status: "inStock", label: "Available" };
-  };
+  const deliveryItems = useMemo(() => {
+    return items.map((item: any) => ({
+      id: item._id, // Map _id to id for DeliveryScreen
+      name: item.name,
+      description: item.Description,
+      price: item.price,
+      availability: (item.availability === "outOfStock"
+        ? "unavailable"
+        : "available") as "unavailable" | "available" | "limited",
+      type: item.type || "veg",
+      image: item.image,
+      quantity: item.quantity,
+      emoji: "🍫",
+      icon: ShoppingCart,
+    }));
+  }, [items]);
 
-  // ... (rest of code)
+  const machineStore = useMemo(() => {
+    if (!machine) return undefined;
+    return {
+      id: machine.id,
+      _id: machine.id,
+      name: machine.names,
+      location: `${machine.location}, ${machine.building || ""}`,
+      description: "24/7 Vending Machine - Instant Snacks",
+      image:
+        machine.image ||
+        "https://images.unsplash.com/photo-1618506557292-ec27c66d6343?q=80&w=3000&auto=format&fit=crop", // Fallback Vending Image
+    };
+  }, [machine]);
 
-  const { addToCart, cartItems } = useCart();
-
-  // Calculate total items in cart for floating button
-  const totalCartItems = cartItems.reduce(
-    (acc, item) => acc + item.quantity,
-    0
-  );
-
-  const handleOrderProduct = (product: any) => {
-    addToCart({
-      productId: product._id,
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      source: "VENDING",
-      sourceId: id,
-      sourceModel: "VendingMachine",
-      image: product.image,
-    });
-  };
-
-  if (!loading && !machine) {
+  if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
-        <p>Machine not found</p>
-        <Button onClick={() => router.push("/restaurant/vending")}>Back</Button>
+      <div className="flex items-center justify-center min-h-screen text-muted-foreground">
+        Loading machine...
+      </div>
+    );
+  }
+
+  if (!machine) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <p className="text-muted-foreground">Machine not found</p>
+        <Button onClick={() => router.push("/restaurant/vending")}>
+          Back to Machines
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="bg-background min-h-screen pb-20">
-      <div className="px-4 pt-4">
-        <div className="animate-in fade-in-50 slide-in-from-right-4">
-          <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={() => router.push("/restaurant/vending")}
-              className="text-primary flex items-center gap-2 hover:gap-3 transition-all font-medium active:scale-95"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to machines
-            </button>
-            {/* Cart Link */}
-            {totalCartItems > 0 && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => router.push("/restaurant/cart")}
-                className="flex items-center gap-2"
-              >
-                <div className="relative">
-                  🛒
-                  <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
-                    {totalCartItems}
-                  </span>
-                </div>
-                Cart
-              </Button>
-            )}
-          </div>
-
-          <Card className="p-4 mb-4 bg-gradient-to-br from-primary/10 to-accent/10 border-accent/30">
-            {/* ... Header content ... */}
-            <div className="flex items-center gap-3">
-              <div className="w-14 h-14 bg-gradient-to-br from-accent/40 to-primary/40 rounded-xl flex items-center justify-center text-3xl">
-                🏪
-              </div>
-              <div>
-                <h2 className="text-lg font-bold">
-                  {machine?.names || "Loading..."}
-                </h2>
-                <p className="text-sm text-muted-foreground mr-1">
-                  📍 {machine?.location}, {machine?.building}
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <h3 className="text-base font-bold mb-3">Available Products</h3>
-          <div className="space-y-3">
-            {loading ? (
-              <p>Loading products...</p>
-            ) : items.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No products available
-              </p>
-            ) : (
-              items.map((product: any, index: number) => {
-                const quantity = product.quantity ?? 0;
-                let statusInfo = {
-                  label: "Available",
-                  className: "bg-green-100 text-green-700 border-green-200",
-                };
-
-                if (quantity === 0) {
-                  statusInfo = {
-                    label: "Out of Stock",
-                    className:
-                      "bg-red-100 text-red-700 border-red-200 opacity-80",
-                  };
-                } else if (quantity <= 10) {
-                  statusInfo = {
-                    label: "Low Stock",
-                    className:
-                      "bg-orange-100 text-orange-700 border-orange-200",
-                  };
-                }
-
-                // Check cart for this specific item quantity if needed, but generic 'Add' is fine
-
-                return (
-                  <Card
-                    key={product._id}
-                    className="p-4 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] animate-in fade-in-50 slide-in-from-right-4"
-                    style={{ animationDelay: `${index * 75}ms` }}
-                  >
-                    <div className="flex items-center gap-4">
-                      {/* Image logic */}
-                      <div className="w-20 h-20 bg-gradient-to-br from-accent/20 to-primary/20 rounded-xl flex items-center justify-center text-4xl shadow-sm overflow-hidden">
-                        {product.image ? (
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span>🛍️</span>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-base">
-                            {product.name}
-                          </h3>
-                          <FoodTypeBadge type={product.type || "veg"} />
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {product.Description}
-                        </p>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="font-bold text-lg text-primary">
-                            ₹{product.price}
-                          </span>
-                          <span
-                            className={`text-xs px-3 py-1.5 rounded-full font-medium shadow-sm transition-all border ${statusInfo.className}`}
-                          >
-                            {statusInfo.label}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    {quantity > 0 && (
-                      <Button
-                        size="sm"
-                        className="w-full mt-3 bg-accent hover:bg-accent/90"
-                        onClick={() => handleOrderProduct(product)}
-                      >
-                        Add to Cart
-                      </Button>
-                    )}
-                  </Card>
-                );
-              })
-            )}
-          </div>
-        </div>
+    <div className="relative">
+      <div className="absolute top-4 left-4 z-20">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => router.push("/restaurant/vending")}
+          className="rounded-full h-8 w-8 p-0 shadow-md bg-white/80 backdrop-blur-md"
+        >
+          ←
+        </Button>
       </div>
+      <DeliveryScreen
+        deliveryItems={deliveryItems}
+        cartItems={cartItems}
+        onUpdateQuantity={updateQuantity}
+        onAddToCart={(item: any) => {
+          addToCart({
+            productId: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: 1,
+            source: "VENDING",
+            sourceId: id,
+            sourceModel: "VendingMachine",
+            image: item.image,
+          });
+        }}
+        onProceedToCart={() => {
+          if (!localStorage.getItem("token")) {
+            toast.error("Please login to order");
+            return;
+          }
+          router.push("/restaurant/cart");
+        }}
+        totals={totals}
+        selectedHostel={selectedHostel}
+        setSelectedHostel={setSelectedHostel}
+        roomNumber={roomNumber}
+        setRoomNumber={setRoomNumber}
+        store={machineStore}
+      />
     </div>
   );
 }

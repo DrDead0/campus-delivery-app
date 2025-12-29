@@ -7,6 +7,13 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -33,6 +40,7 @@ function VendingMachineForm({
   onSave,
 }: VendingMachineFormProps) {
   const [pending, startTransition] = useTransition();
+  const [hostel, setHostel] = useState(machine?.hostel || "");
   const isEdit = !!machine;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -95,21 +103,34 @@ function VendingMachineForm({
           />
         </div>
         <div>
+          <Label htmlFor="image">Image URL</Label>
+          <Input
+            id="image"
+            name="image"
+            placeholder="e.g. /images/machine.jpg"
+            defaultValue={machine?.image || ""}
+          />
+        </div>
+        <div>
           <Label htmlFor="hostel">Hostel/Building</Label>
-          <select
-            id="hostel"
-            name="hostel"
-            defaultValue={machine?.hostel || ""}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          <input type="hidden" name="hostel" value={hostel} />
+          <Select
+            name="hostel_select"
+            value={hostel}
+            onValueChange={setHostel}
             required
           >
-            <option value="">Select a hostel...</option>
-            {hostels.map((h) => (
-              <option key={h} value={h}>
-                {h}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a hostel..." />
+            </SelectTrigger>
+            <SelectContent>
+              {hostels.map((h) => (
+                <SelectItem key={h} value={h}>
+                  {h}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div>
           <Label htmlFor="username">Username</Label>
@@ -190,7 +211,7 @@ export function VendingMachinesListClient({ machines }: { machines: any[] }) {
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-sm">{machine.names}</h3>
                 <p className="text-xs text-muted-foreground">
-                  {machine.location}, {machine.hostel}
+                  {machine.location} • {machine.hostel || "Main Block"}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   ID: {machine.id} · Items: {machine.items?.length || 0}

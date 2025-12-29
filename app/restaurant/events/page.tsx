@@ -1,7 +1,7 @@
-"use client";
+import EventsClient from "./client";
 
-import { EventsScreen } from "@/components/events-screen";
+export const dynamic = "force-dynamic";
 
 export default function EventsPage() {
-  return <EventsScreen />;
+  return <EventsClient />;
 }

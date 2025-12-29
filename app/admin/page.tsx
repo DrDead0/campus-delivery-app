@@ -2,20 +2,21 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  logoutAction,
-  syncEventsAction,
-  syncVendingMachinesAction,
-} from "./actions";
+import { logoutAction } from "./actions";
 import Link from "next/link";
-import { deliveryItems, events, vendingMachines } from "@/lib/data";
 import dbConnect from "@/app/db";
 import Product from "@/app/models/product.model";
 import VendingMachine from "@/app/models/vendingMachine.model";
 import Event from "@/app/models/events.model";
 import { AutoRefresh } from "@/components/auto-refresh";
-import { getAdminStats } from "@/app/actions/order-actions";
+import {
+  getAdminStats,
+  getAllOrdersForAdmin,
+} from "@/app/actions/order-actions";
 import { AdminOrderStats } from "@/components/admin-order-stats";
+import { AdminAllOrders } from "@/components/admin-all-orders";
+import { AdminOrdersManagement } from "@/components/admin-orders-management";
+import { ModeToggle } from "@/components/mode-toggle";
 
 async function getAuth() {
   const cookieStore = await cookies();
@@ -23,10 +24,12 @@ async function getAuth() {
 }
 
 export default async function AdminDashboard() {
+  // Force rebuild to fix hydration
   const isAuthed = await getAuth();
   if (!isAuthed) redirect("/admin/login");
 
   let orderStats = { storeStats: [], vendingStats: [] };
+  let allOrders: any[] = [];
 
   try {
     const conn = await dbConnect();
@@ -35,22 +38,26 @@ export default async function AdminDashboard() {
     // Fetch Order Stats
     try {
       orderStats = await getAdminStats();
+      allOrders = await getAllOrdersForAdmin();
     } catch (e) {
       console.error("Failed to fetch order stats", e);
     }
 
     // ... existing counts logic
+    // ... existing counts logic
     const dbProductsCount = conn ? await Product.countDocuments() : 0;
     const dbEventsCount = conn ? await Event.countDocuments() : 0;
     // ...
-    const vendingMachinesData = conn ? await VendingMachine.find({}).lean() : [];
+    const vendingMachinesData = conn
+      ? await VendingMachine.find({}).lean()
+      : [];
 
     // ...
 
     const stats = {
-      deliveryItems: deliveryItems.length,
+      deliveryItems: dbProductsCount, // Use DB Products count instead of static list
       events: dbEventsCount,
-      vending: vendingMachinesData.length || vendingMachines.length,
+      vending: vendingMachinesData.length,
       dbProducts: dbProductsCount,
     };
 
@@ -58,9 +65,12 @@ export default async function AdminDashboard() {
       <div className="min-h-screen px-4 py-6 space-y-6 max-w-7xl mx-auto">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
-          <form action={logoutAction}>
-            <Button variant="secondary">Logout</Button>
-          </form>
+          <div className="flex items-center gap-4">
+            <ModeToggle />
+            <form action={logoutAction}>
+              <Button variant="secondary">Logout</Button>
+            </form>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -94,8 +104,14 @@ export default async function AdminDashboard() {
           </Card>
         </div>
 
+        {/* Recent Orders Management Section */}
+        <AdminOrdersManagement orders={allOrders} />
+
         {/* Order Stats Section */}
         <AdminOrderStats stats={orderStats} />
+
+        {/* All Orders Table */}
+        <AdminAllOrders orders={allOrders} />
 
         {/* Quick Commands */}
         <Card>
@@ -104,8 +120,8 @@ export default async function AdminDashboard() {
             <CardTitle>Quick Commands</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {/* ... */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="flex gap-2 mb-4">{/* Sync buttons removed */}</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <Button variant="default" asChild className="rounded-lg">
                 <Link href="/admin/products">Manage products</Link>
               </Button>
@@ -126,7 +142,7 @@ export default async function AdminDashboard() {
             </Button>
           </CardContent>
         </Card>
-        <AutoRefresh />
+        <AutoRefresh intervalMs={10000} />
       </div>
     );
   } catch (err) {

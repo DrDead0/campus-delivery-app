@@ -3,6 +3,13 @@
 import { useState, useTransition, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -134,27 +141,30 @@ function ProductForm({
         </div>
         <div>
           <Label htmlFor="availability">Availability</Label>
-          <select
-            id="availability"
+          <Select
             name="availability"
             defaultValue={product?.availability || "inStock"}
-            className="h-9 rounded-md border px-3 w-full"
           >
-            <option value="inStock">In Stock</option>
-            <option value="outOfStock">Out of Stock</option>
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Availability" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="inStock">In Stock</SelectItem>
+              <SelectItem value="outOfStock">Out of Stock</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div>
           <Label htmlFor="type">Type</Label>
-          <select
-            id="type"
-            name="type"
-            defaultValue={product?.type || "veg"}
-            className="h-9 rounded-md border px-3 w-full"
-          >
-            <option value="veg">Veg</option>
-            <option value="non-veg">Non-Veg</option>
-          </select>
+          <Select name="type" defaultValue={product?.type || "veg"}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="veg">Veg</SelectItem>
+              <SelectItem value="non-veg">Non-Veg</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <div>
@@ -264,7 +274,41 @@ export function ProductsListClient({
   const [deletePending, startDeleteTransition] = useTransition();
   const [saving, setSaving] = useState(false);
 
+  // Search and Filter State
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterLocation, setFilterLocation] = useState("all");
+
   const editingProduct = products.find((p) => p._id === editingId);
+
+  // Derived filtered products
+  const filteredProducts = products.filter((product) => {
+    // 1. Search Filter
+    const matchesSearch =
+      searchTerm === "" ||
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.Description?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // 2. Location Filter
+    let matchesLocation = true;
+    if (filterLocation !== "all") {
+      const [type, id] = filterLocation.split(":");
+      if (type === "machine") {
+        const machine = machines.find((m) => m._id === id);
+        matchesLocation = machine?.items?.some(
+          (item: any) =>
+            item.productId && item.productId.toString() === product._id
+        );
+      } else if (type === "store") {
+        const store = stores.find((s) => s._id === id);
+        matchesLocation = store?.items?.some(
+          (item: any) =>
+            item.productId && item.productId.toString() === product._id
+        );
+      }
+    }
+
+    return matchesSearch && matchesLocation;
+  });
 
   const handleDelete = (id: string) => {
     if (!confirm("Delete this product?")) return;
@@ -279,8 +323,8 @@ export function ProductsListClient({
 
   return (
     <>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-medium">All Products</h3>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+        <h3 className="font-medium text-lg">All Products</h3>
         <Button
           size="sm"
           onClick={() => {
@@ -291,29 +335,83 @@ export function ProductsListClient({
           Add Product
         </Button>
       </div>
+
+      {/* Filters */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div>
+          <Label htmlFor="search" className="sr-only">
+            Search
+          </Label>
+          <Input
+            id="search"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div>
+          <Select value={filterLocation} onValueChange={setFilterLocation}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by location" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Products</SelectItem>
+              {machines.length > 0 && (
+                <>
+                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                    Vending Machines
+                  </div>
+                  {machines.map((m) => (
+                    <SelectItem key={m._id} value={`machine:${m._id}`}>
+                      {m.names}
+                    </SelectItem>
+                  ))}
+                </>
+              )}
+              {stores.length > 0 && (
+                <>
+                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                    Stores
+                  </div>
+                  {stores.map((s) => (
+                    <SelectItem key={s._id} value={`store:${s._id}`}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       <div className="space-y-3">
-        {products.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No products yet.</p>
+        {filteredProducts.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-8 text-center">
+            {products.length === 0
+              ? "No products added yet."
+              : "No products match your filters."}
+          </p>
         ) : (
-          products.map((product) => (
+          filteredProducts.map((product) => (
             <div
               key={product._id}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent"
+              className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
             >
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-sm">{product.name}</h3>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground truncate">
                   {product.Description}
                 </p>
                 <div className="flex gap-2 mt-2 text-xs">
-                  <span className="bg-secondary px-2 py-1 rounded">
-                    ${product.price}
+                  <span className="bg-secondary px-2 py-1 rounded font-medium">
+                    ₹{product.price}
                   </span>
                   <span
                     className={`px-2 py-1 rounded ${
                       product.availability === "inStock"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
                     }`}
                   >
                     {product.availability === "inStock"
@@ -322,7 +420,7 @@ export function ProductsListClient({
                   </span>
                 </div>
               </div>
-              <div className="flex gap-2 ml-2">
+              <div className="flex gap-2 ml-4">
                 <Button
                   size="sm"
                   variant="outline"
