@@ -414,7 +414,8 @@ function OrdersManager({
                       {order.status !== "DELIVERED" &&
                         order.status !== "CANCELLED" && (
                           <>
-                            {order.status !== "PREPARING" && (
+                            {(order.status === "PENDING" ||
+                              order.status === "CONFIRMED") && (
                               <Button
                                 size="sm"
                                 onClick={() =>
@@ -424,16 +425,30 @@ function OrdersManager({
                                 Prepare
                               </Button>
                             )}
-                            <Button
-                              size="sm"
-                              variant="default"
-                              className="bg-green-600 hover:bg-green-700"
-                              onClick={() =>
-                                handleStatusUpdate(order._id, "DELIVERED")
-                              }
-                            >
-                              Ready / Deliver
-                            </Button>
+                            {order.status === "PREPARING" && (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="bg-blue-600 hover:bg-blue-700"
+                                onClick={() =>
+                                  handleStatusUpdate(order._id, "READY")
+                                }
+                              >
+                                Ready
+                              </Button>
+                            )}
+                            {order.status === "READY" && (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="bg-green-600 hover:bg-green-700"
+                                onClick={() =>
+                                  handleStatusUpdate(order._id, "DELIVERED")
+                                }
+                              >
+                                Deliver
+                              </Button>
+                            )}
                           </>
                         )}
                     </div>

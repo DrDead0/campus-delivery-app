@@ -15,6 +15,7 @@ import {
 } from "@/app/actions/order-actions";
 import { AdminOrderStats } from "@/components/admin-order-stats";
 import { AdminAllOrders } from "@/components/admin-all-orders";
+import { AdminOrdersManagement } from "@/components/admin-orders-management";
 import { ModeToggle } from "@/components/mode-toggle";
 
 async function getAuth() {
@@ -102,6 +103,9 @@ export default async function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Recent Orders Management Section */}
+        <AdminOrdersManagement orders={allOrders} />
 
         {/* Order Stats Section */}
         <AdminOrderStats stats={orderStats} />

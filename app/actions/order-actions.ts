@@ -663,24 +663,60 @@ export async function getAllOrdersForAdmin() {
   }
 }
 
-export async function cancelOrderAction(orderId: string) {
-    await dbConnect();
-    try {
-        const order = await Order.findById(orderId);
-        if (!order) return { ok: false, error: "Order not found" };
+export async function cancelOrderActionV2(orderId: string) {
+  await dbConnect();
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) return { ok: false, error: "Order not found" };
 
-        // Allow cancellation if PENDING or CONFIRMED
-        // (Assuming CONFIRMED is before PREPARING)
-        if (order.status !== "PENDING" && order.status !== "CONFIRMED") {
-            return { ok: false, error: "Order cannot be cancelled at this stage" };
-        }
-
-        order.status = "CANCELLED";
-        await order.save();
-
-        return { ok: true };
-    } catch (error) {
-        console.error("Error cancelling order:", error);
-        return { ok: false, error: "Failed to cancel order" };
+    // Allow cancellation if PENDING or CONFIRMED
+    // (Assuming CONFIRMED is before PREPARING)
+    if (order.status !== "PENDING" && order.status !== "CONFIRMED") {
+      return { ok: false, error: "Order cannot be cancelled at this stage" };
     }
+
+    order.status = "CANCELLED";
+    await order.save();
+
+    return { ok: true };
+  } catch (error) {
+    console.error("Error cancelling order:", error);
+    return { ok: false, error: "Failed to cancel order" };
+  }
+}
+
+export async function updateOrderStatusAction(
+  orderId: string,
+  newStatus: string
+) {
+  await dbConnect();
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) return { ok: false, error: "Order not found" };
+
+    // Allow status updates only for non-cancelled, non-delivered orders
+    if (order.status === "CANCELLED" || order.status === "DELIVERED") {
+      return { ok: false, error: "Cannot update status for this order" };
+    }
+
+    // Validate status transition
+    const validStatuses = [
+      "PENDING",
+      "CONFIRMED",
+      "PREPARING",
+      "READY",
+      "DELIVERED",
+    ];
+    if (!validStatuses.includes(newStatus)) {
+      return { ok: false, error: "Invalid status" };
+    }
+
+    order.status = newStatus;
+    await order.save();
+
+    return { ok: true };
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    return { ok: false, error: "Failed to update order status" };
+  }
 }
