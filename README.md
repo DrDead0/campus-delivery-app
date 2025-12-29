@@ -121,5 +121,5 @@ A quick look at the top-level directory structure:
 
 This project is actively maintained and managed by:
 
+- **Aashish Raj** ([@aashishrajdev](https://github.com/aashishrajdev))
 - **Ashish Chaurasiya** ([@drdead](https://github.com/drdead))
-- **Aashis Raj** ([@aashishrajdev](https://github.com/aashishrajdev))
