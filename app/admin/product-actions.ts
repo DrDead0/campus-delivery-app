@@ -51,7 +51,7 @@ export async function createProductAction(formData: FormData) {
             if (!existingItem) {
               machine.items.push({
                 productId: product._id,
-                quantity: 0, // Start with 0 stock, admin can update later
+                quantity: 20, // Start with 20 stock by default
               });
               await machine.save();
             }
@@ -143,7 +143,7 @@ export async function updateProductAction(formData: FormData) {
             if (!existingItem) {
               machine.items.push({
                 productId: id,
-                quantity: 0, // Start with 0 stock, admin can update later
+                quantity: 20, // Start with 20 stock by default
               });
               await machine.save();
             }

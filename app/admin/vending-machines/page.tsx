@@ -36,6 +36,7 @@ export default async function VendingMachinesAdminPage() {
     }
 
     const machines = await VendingMachine.find({}).lean();
+    console.log("Fetched machines:", JSON.stringify(machines, null, 2)); // Debug logging
     const serialized = JSON.parse(JSON.stringify(machines));
 
     return (

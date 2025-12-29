@@ -18,6 +18,8 @@ export async function createVendingMachineAction(formData: FormData) {
     const password = String(formData.get("password") || "").trim();
     const type = String(formData.get("type") || "both").trim();
 
+    const image = String(formData.get("image") || "").trim();
+
     if (!id || !names || !location || !username || !password)
       return { ok: false, error: "All fields are required." };
 
@@ -36,7 +38,7 @@ export async function createVendingMachineAction(formData: FormData) {
       type, // New field
       username,
       password: hashedPassword,
-      image: "/placeholder-logo.png",
+      image: image || "/placeholder-logo.png",
       building: "Main Block", // Default
       items: [],
     });
@@ -62,10 +64,21 @@ export async function updateVendingMachineAction(formData: FormData) {
     const username = String(formData.get("username") || "").trim();
     const password = String(formData.get("password") || "").trim();
     const type = String(formData.get("type") || "both").trim();
+    const image = String(formData.get("image") || "").trim();
 
     if (!originalId) return { ok: false, error: "Missing original ID." };
 
-    const updateData: any = { id, names, location, hostel, type, username }; // Added type
+    console.log("Updating machine with hostel:", hostel); // Debug log
+
+    const updateData: any = {
+      id,
+      names,
+      location,
+      hostel,
+      type,
+      username,
+      image,
+    }; // Added type and image
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);
     }

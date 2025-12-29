@@ -10,8 +10,9 @@ export default async function VendingPage() {
     id: m.id,
     name: m.names,
     location: m.location,
-    hostel: m.building || m.hostel || "",
+    hostel: m.hostel || m.building || "", // Prioritize hostel, fallback to building
     type: m.type,
+    image: m.image,
   }));
 
   return <VendingClient initialMachines={mapped} />;

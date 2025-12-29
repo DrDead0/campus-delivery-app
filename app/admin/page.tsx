@@ -2,13 +2,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  logoutAction,
-  syncEventsAction,
-  syncVendingMachinesAction,
-} from "./actions";
+import { logoutAction } from "./actions";
 import Link from "next/link";
-import { deliveryItems, events, vendingMachines } from "@/lib/data";
 import dbConnect from "@/app/db";
 import Product from "@/app/models/product.model";
 import VendingMachine from "@/app/models/vendingMachine.model";
@@ -48,6 +43,7 @@ export default async function AdminDashboard() {
     }
 
     // ... existing counts logic
+    // ... existing counts logic
     const dbProductsCount = conn ? await Product.countDocuments() : 0;
     const dbEventsCount = conn ? await Event.countDocuments() : 0;
     // ...
@@ -58,9 +54,9 @@ export default async function AdminDashboard() {
     // ...
 
     const stats = {
-      deliveryItems: deliveryItems.length,
+      deliveryItems: dbProductsCount, // Use DB Products count instead of static list
       events: dbEventsCount,
-      vending: vendingMachinesData.length || vendingMachines.length,
+      vending: vendingMachinesData.length,
       dbProducts: dbProductsCount,
     };
 
@@ -120,18 +116,7 @@ export default async function AdminDashboard() {
             <CardTitle>Quick Commands</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex gap-2 mb-4">
-              <form action={syncEventsAction}>
-                <Button variant="outline" size="sm">
-                  Sync Events
-                </Button>
-              </form>
-              <form action={syncVendingMachinesAction}>
-                <Button variant="outline" size="sm">
-                  Sync Vending Machines
-                </Button>
-              </form>
-            </div>
+            <div className="flex gap-2 mb-4">{/* Sync buttons removed */}</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <Button variant="default" asChild className="rounded-lg">
                 <Link href="/admin/products">Manage products</Link>

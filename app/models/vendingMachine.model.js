@@ -20,6 +20,10 @@ const vendingMachineSchema = new Schema(
       type: String,
       required: true,
     },
+    hostel: {
+      type: String,
+      required: true,
+    },
     image: {
       type: String,
       required: true,

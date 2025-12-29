@@ -40,6 +40,7 @@ function VendingMachineForm({
   onSave,
 }: VendingMachineFormProps) {
   const [pending, startTransition] = useTransition();
+  const [hostel, setHostel] = useState(machine?.hostel || "");
   const isEdit = !!machine;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -102,8 +103,23 @@ function VendingMachineForm({
           />
         </div>
         <div>
+          <Label htmlFor="image">Image URL</Label>
+          <Input
+            id="image"
+            name="image"
+            placeholder="e.g. /images/machine.jpg"
+            defaultValue={machine?.image || ""}
+          />
+        </div>
+        <div>
           <Label htmlFor="hostel">Hostel/Building</Label>
-          <Select name="hostel" defaultValue={machine?.hostel || ""} required>
+          <input type="hidden" name="hostel" value={hostel} />
+          <Select
+            name="hostel_select"
+            value={hostel}
+            onValueChange={setHostel}
+            required
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select a hostel..." />
             </SelectTrigger>
@@ -195,7 +211,7 @@ export function VendingMachinesListClient({ machines }: { machines: any[] }) {
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-sm">{machine.names}</h3>
                 <p className="text-xs text-muted-foreground">
-                  {machine.location}, {machine.hostel}
+                  {machine.location} • {machine.hostel || "Main Block"}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   ID: {machine.id} · Items: {machine.items?.length || 0}
