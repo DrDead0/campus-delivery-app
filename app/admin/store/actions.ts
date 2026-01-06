@@ -23,7 +23,7 @@ export async function loginAction(formData: FormData) {
     if (store) {
       const isValid = await bcrypt.compare(password, store.password);
       if (isValid) {
-        console.log("Login successful for Store:", username);
+
         const cookieStore = await cookies();
         cookieStore.set(
           "store_owner_auth",
@@ -38,7 +38,7 @@ export async function loginAction(formData: FormData) {
         );
         return { ok: true };
       }
-      console.log("Store found but password invalid for:", username);
+
     }
 
     // Check Vending Machines
@@ -46,7 +46,7 @@ export async function loginAction(formData: FormData) {
     if (vm) {
       const isValid = await bcrypt.compare(password, vm.password);
       if (isValid) {
-        console.log("Login successful for VendingMachine:", username);
+
         const cookieStore = await cookies();
         cookieStore.set(
           "store_owner_auth",
@@ -61,7 +61,7 @@ export async function loginAction(formData: FormData) {
         );
         return { ok: true };
       }
-      console.log("VendingMachine found but password invalid for:", username);
+
     }
 
     return { ok: false, error: "Invalid credentials" };

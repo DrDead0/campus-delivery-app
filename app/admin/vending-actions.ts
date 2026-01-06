@@ -68,7 +68,7 @@ export async function updateVendingMachineAction(formData: FormData) {
 
     if (!originalId) return { ok: false, error: "Missing original ID." };
 
-    console.log("Updating machine with hostel:", hostel); // Debug log
+
 
     const updateData: any = {
       id,
@@ -132,7 +132,7 @@ export async function restockVendingItemAction(formData: FormData) {
     revalidatePath("/admin/products");
     revalidatePath("/api/vending-machines");
 
-    console.log(`Updated product stock in machine ${machine.names}`);
+
     return { ok: true };
   } catch (err) {
     console.error("restockVendingItemAction error:", err);

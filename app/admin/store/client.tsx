@@ -175,7 +175,7 @@ function OrdersManager({
       } catch (e) {
         console.error("Polling error", e);
       }
-    }, 5000); // 5 seconds
+    }, 15000); // 15 seconds
     return () => clearInterval(interval);
   }, [storeId]);
 
@@ -843,10 +843,10 @@ function ProductsManager({ data, type }: { data: any; type: string }) {
                           <Badge
                             variant={isOutOfStock ? "destructive" : "secondary"}
                             className={`capitalize text-[10px] h-5 px-1.5 ${!isOutOfStock && quantity <= 10
-                                ? "bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/20"
-                                : !isOutOfStock
-                                  ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/20"
-                                  : ""
+                              ? "bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/20"
+                              : !isOutOfStock
+                                ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/20"
+                                : ""
                               }`}
                           >
                             {isOutOfStock

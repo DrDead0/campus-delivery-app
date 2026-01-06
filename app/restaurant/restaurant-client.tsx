@@ -202,8 +202,9 @@ export default function RestaurantClient({
     };
 
     // Initial fetch not needed as we passing props but interval is needed
-    const interval = setInterval(fetchContent, 1000); // 1s refresh
-    return () => clearInterval(interval);
+    // Initial fetch not needed as we passing props and polling removed for optimization
+    // const interval = setInterval(fetchContent, 1000); 
+    // return () => clearInterval(interval);
   }, []);
 
   return (
@@ -363,16 +364,14 @@ export default function RestaurantClient({
                   onClick={() =>
                     setSelectedCategory(isSelected ? null : cat.name)
                   }
-                  className={`flex flex-col items-center gap-3 min-w-[72px] snap-center cursor-pointer transition-all duration-300 ${
-                    isSelected ? "scale-105" : "hover:scale-105"
-                  }`}
+                  className={`flex flex-col items-center gap-3 min-w-[72px] snap-center cursor-pointer transition-all duration-300 ${isSelected ? "scale-105" : "hover:scale-105"
+                    }`}
                 >
                   <div
-                    className={`w-16 h-16 rounded-full flex items-center justify-center shadow-sm overflow-hidden transition-all duration-300 ${
-                      isSelected
+                    className={`w-16 h-16 rounded-full flex items-center justify-center shadow-sm overflow-hidden transition-all duration-300 ${isSelected
                         ? "border-2 border-primary ring-2 ring-primary/20 scale-105 shadow-md"
                         : "border border-border/50 bg-secondary/50 grayscale-[0.3] hover:grayscale-0"
-                    }`}
+                      }`}
                   >
                     <img
                       src={cat.image}
@@ -381,11 +380,10 @@ export default function RestaurantClient({
                     />
                   </div>
                   <span
-                    className={`text-xs font-semibold text-center leading-tight transition-colors duration-300 ${
-                      isSelected
+                    className={`text-xs font-semibold text-center leading-tight transition-colors duration-300 ${isSelected
                         ? "text-primary scale-105"
                         : "text-foreground/80"
-                    }`}
+                      }`}
                   >
                     {cat.name}
                   </span>

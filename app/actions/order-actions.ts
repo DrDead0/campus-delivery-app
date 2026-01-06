@@ -14,18 +14,14 @@ import fs from "fs";
 function getEnvManual(key: string): string | undefined {
   try {
     const envPath = path.resolve(process.cwd(), ".env.local");
-    console.log(`[ManualEnv] Checking path: ${envPath}`);
+
 
     if (fs.existsSync(envPath)) {
       const content = fs.readFileSync(envPath, "utf8");
 
       // Debug: Log all keys found in the file (safely)
       const allKeys = content.match(/^\s*([A-Z_]+)\s*=/gm) || [];
-      console.log(
-        `[ManualEnv] Keys found in file: ${allKeys
-          .map((k) => k.split("=")[0].trim())
-          .join(", ")}`
-      );
+
 
       // Robust regex:
       // 1. Start of line (with optional whitespace)
@@ -43,13 +39,13 @@ function getEnvManual(key: string): string | undefined {
       const match = content.match(regex);
 
       if (match) {
-        console.log(`[ManualEnv] Found value for ${key}`);
+
         return match[1].trim();
       } else {
-        console.log(`[ManualEnv] NO match for ${key}`);
+
       }
     } else {
-      console.log(`[ManualEnv] File not found at ${envPath}`);
+
     }
   } catch (e) {
     console.error("Manual env parse failed:", e);
@@ -78,15 +74,8 @@ export async function createOrder({
 
   try {
     const user = await User.findById(userId);
-    console.log("DEBUG: createOrder received:", {
-      address,
-      roomNumber,
-      userId,
-    });
-    console.log(
-      "DEBUG: User fetched:",
-      user ? { name: user.name, phone: user.phone } : "No User"
-    );
+
+
 
     const newOrder = new Order({
       userId,
@@ -101,7 +90,7 @@ export async function createOrder({
       userPhone: user ? user.phone : "",
     });
 
-    console.log("DEBUG: newOrder toObject before save:", newOrder.toObject());
+
 
     let razorpayOrderData = null;
 
@@ -525,10 +514,7 @@ export async function getStoreOrders(storeId: string) {
       .lean();
 
     if (orders.length > 0) {
-      console.log(
-        "DEBUG: getStoreOrders first order raw:",
-        JSON.stringify(orders[0], null, 2)
-      );
+
     }
 
     // Filter items to only show those belonging to this store

@@ -145,7 +145,7 @@ export default async function AdminDashboard() {
             </Button>
           </CardContent>
         </Card>
-        <AutoRefresh intervalMs={10000} />
+        <AutoRefresh intervalMs={30000} />
       </div>
     );
   } catch (err) {
