@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
-    ignoreBuildErrors: true,
+    // strict mode is enabled by default in latest next.js, no need to suppress
   },
   images: {
-    unoptimized: true,
+    // Optimization enabled by default
   },
 }
 
-export default nextConfig
+export default nextConfig;

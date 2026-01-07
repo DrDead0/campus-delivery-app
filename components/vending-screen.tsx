@@ -39,11 +39,11 @@ export function VendingScreen() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        console.log("Fetching unified products from /api/products...");
+
         const res = await fetch("/api/products");
         if (res.ok) {
           const data = await res.json();
-          console.log("Fetched products for vending:", data);
+
           setProducts(data);
         }
       } catch (err) {
@@ -207,11 +207,10 @@ export function VendingScreen() {
                               ₹{product.price}
                             </span>
                             <span
-                              className={`text-xs px-3 py-1.5 rounded-full font-medium shadow-sm transition-all ${
-                                status === "inStock"
-                                  ? "bg-success/20 text-success border border-success/30"
-                                  : "bg-destructive/20 text-destructive border border-destructive/30"
-                              }`}
+                              className={`text-xs px-3 py-1.5 rounded-full font-medium shadow-sm transition-all ${status === "inStock"
+                                ? "bg-success/20 text-success border border-success/30"
+                                : "bg-destructive/20 text-destructive border border-destructive/30"
+                                }`}
                             >
                               {label}
                             </span>

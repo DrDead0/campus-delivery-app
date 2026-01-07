@@ -46,8 +46,8 @@ export default function StoreClient({
       }
     };
     fetchStore();
-    const interval = setInterval(fetchStore, 1000);
-    return () => clearInterval(interval);
+    fetchStore();
+    // Removed polling interval for optimization
   }, [storeId]);
 
   const deliveryItems = useMemo(() => {

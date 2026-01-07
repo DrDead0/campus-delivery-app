@@ -33,7 +33,7 @@ export default function VendingClient({ initialMachines }: VendingClientProps) {
         console.error("Failed to update machines", err);
       }
     };
-    const interval = setInterval(fetchMachines, 5000); // 5s refresh is enough
+    const interval = setInterval(fetchMachines, 30000);
     return () => clearInterval(interval);
   }, []);
 
