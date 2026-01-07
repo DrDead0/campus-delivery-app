@@ -2,11 +2,15 @@
 
 export const hostels = [
   " zakir c Hostel",
-  "Chanakya Hostel",
-  "Ramanujan Hostel",
-  "Kalam Hostel",
-  "Gandhi Hostel",
-  "Vivekananda Hostel",
+  "zakir A hostel",
+  "zakir B hostel",
+  "zakir d hostel",
+  "NC 6 hostel",
+  "NC 5 Hostel",
+  "NC 4 Hostel",
+  "NC 2 Hostel",
+  "NC 3 Hostel",
+  "NC Hostel",
 ];
 
 export const categories = [
