@@ -3,15 +3,10 @@ import type React from "react";
 export const dynamic = "force-dynamic";
 
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Alkatra } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "./context/CartContext";
 import "./globals.css";
-
-const _geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
-const _geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
-const alkatra = Alkatra({ subsets: ["latin"], variable: "--font-alkatra" });
 
 export const metadata: Metadata = {
   title: "CampusCart - Campus Delivery & Events",
@@ -57,7 +52,28 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans antialiased ${alkatra.variable}`}>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Alkatra:wght@400..700&display=swap"
+        />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-sans/style.css"
+        />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/style.css"
+        />
+      </head>
+      <body
+        className={`font-sans antialiased`}
+        style={
+          {
+            "--font-alkatra": '"Alkatra", system-ui',
+          } as React.CSSProperties
+        }
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

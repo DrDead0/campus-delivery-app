@@ -38,6 +38,14 @@ const userSchema = new Schema(
       type: [{ type: Schema.Types.ObjectId, ref: "Order" }],
       default: [],
     },
+    resetPasswordToken: {
+      type: String,
+      default: undefined,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: undefined,
+    },
   },
   { timestamps: true }
 );

@@ -7,9 +7,13 @@ export function signToken(payload: object): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
-export function verifyToken(token: string): object | null {
+export function verifyToken(token: string): jwt.JwtPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (typeof decoded !== "object" || decoded === null) {
+      return null;
+    }
+    return decoded as jwt.JwtPayload;
   } catch (err) {
     return null;
   }

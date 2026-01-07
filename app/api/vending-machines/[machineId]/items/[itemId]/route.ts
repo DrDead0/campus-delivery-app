@@ -4,8 +4,9 @@ import VendingMachine from "@/app/models/vendingMachine.model";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { machineId: string; itemId: string } }
+  context: { params: Promise<{ machineId: string; itemId: string }> }
 ) {
+  const params = await context.params;
   try {
     const { action, quantity } = await request.json();
     const conn = await dbConnect();

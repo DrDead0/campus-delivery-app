@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/app/utils/jwt';
 
-export async function authMiddleware(request) {
+export async function authMiddleware(request:any) {
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
         return NextResponse.json({ error: 'Missing or invalid Authorization header' }, { status: 401 });
