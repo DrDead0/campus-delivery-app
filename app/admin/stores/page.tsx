@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import dbConnect from "@/app/db";
 import Store from "@/app/models/store.model";
-import "@/app/models/product.model"; // Ensure Product model is registered
+import "@/app/models/product.model";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -60,18 +60,7 @@ export default async function StoresAdminPage() {
           </CardContent>
         </Card>
 
-        {/* Display Orders for the first store for demo, or loop? 
-           The user wants "respective store admin page". 
-           Wait, there isn't a route for individual store admin in this file structure yet, 
-           only a list of stores. 
-           I should check if `app/admin/stores/[id]` exists. 
-           If not, I should probably add orders inside `StoresListClient` (expanded view) 
-           or simpler: just show ALL store orders for now or link to details.
-           Checking directory list... `app/admin/stores` (2 children).
-           Let's check if there is an [id] folder.
-           
-           If not, I'll create a new page for single store admin details.
-        */}
+
 
         <AutoRefresh intervalMs={60000} />
       </div>

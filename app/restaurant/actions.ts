@@ -9,10 +9,7 @@ import Product from "@/app/models/product.model";
 const getCachedStores = unstable_cache(
   async () => {
     await dbConnect();
-    // Ensure Product model is registered
-    if (!Product) {
-      // no-op, just ensuring import
-    }
+
     const stores = await Store.find({}).populate("items.productId").lean();
     return JSON.parse(JSON.stringify(stores)).map((store: any) => ({
       ...store,
@@ -38,11 +35,11 @@ const getCachedVendingMachines = unstable_cache(
       location: vm.location,
       hostel: vm.hostel,
       building: vm.building,
-      image: vm.image, // Pass image to client
+      image: vm.image,
     }));
   },
   ["vending-list"],
-  { revalidate: 300, tags: ["vending-machines"] } // Cache full list for 5 mins, since we poll status separately
+  { revalidate: 300, tags: ["vending-machines"] }
 );
 
 export async function getVendingMachinesAction(timestamp?: number) {
@@ -61,18 +58,16 @@ const getCachedVendingStatus = unstable_cache(
     }));
   },
   ["vending-status"],
-  { revalidate: 30, tags: ["vending-status"] } // Cache status for 30s matching client poll
+  { revalidate: 30, tags: ["vending-status"] }
 );
 
 export async function getVendingMachinesStatus() {
   return getCachedVendingStatus();
 }
+
 export async function getVendingMachineById(id: string) {
   await dbConnect();
-  // Ensure Product model is registered
-  if (!Product) {
-    // no-op
-  }
+
   const vm = await VendingMachine.findOne({ id })
     .populate("items.productId")
     .lean();
@@ -82,7 +77,6 @@ export async function getVendingMachineById(id: string) {
   return JSON.parse(JSON.stringify(vm));
 }
 
-// Optimization: Lightweight action for polling stock
 export async function getVendingMachineStock(id: string) {
   await dbConnect();
   const vm = await VendingMachine.findOne({ id }).select('items.productId items.quantity').lean();
@@ -90,9 +84,8 @@ export async function getVendingMachineStock(id: string) {
   if (!vm) return null;
   const items = vm.items || [];
 
-  // Return minimal data: productId and quantity
   return items.map((item: any) => ({
-    productId: item.productId ? item.productId.toString() : null, // Handle ObjectId
+    productId: item.productId ? item.productId.toString() : null,
     quantity: item.quantity
   })).filter((item: any) => item.productId);
 }

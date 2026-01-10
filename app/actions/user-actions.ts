@@ -54,7 +54,6 @@ export async function sendAdminEmailAction(
         if (emails.length === 0) {
             return { ok: false, error: "No valid email addresses found." };
         }
-
         // 2. Configure Transporter
         let transporterConfig: any = {};
 
