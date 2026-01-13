@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
 
+let cached = global._mongooseCache;
+if (!cached) {
+  cached = global._mongooseCache = { conn: null, promise: null };
+}
+
 const dbConnect = async () => {
   const MONGO_URI = process.env.MONGO_URI;
 
