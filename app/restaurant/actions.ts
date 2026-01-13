@@ -8,14 +8,17 @@ import Product from "@/app/models/product.model";
 
 const getCachedStores = unstable_cache(
   async () => {
-    const conn = await dbConnect();
-    if (!conn) return [];
-
-    const stores = await Store.find({}).populate("items.productId").lean();
-    return JSON.parse(JSON.stringify(stores)).map((store: any) => ({
-      ...store,
-      id: store.id || store._id,
-    }));
+    try {
+      await dbConnect();
+      const stores = await Store.find({}).populate("items.productId").lean();
+      return JSON.parse(JSON.stringify(stores)).map((store: any) => ({
+        ...store,
+        id: store.id || store._id,
+      }));
+    } catch (e) {
+      console.error("Failed to fetch stores:", e);
+      return [];
+    }
   },
   ["stores-list"],
   { revalidate: 60, tags: ["stores"] }
@@ -27,18 +30,22 @@ export async function getStoresAction(timestamp?: number) {
 
 const getCachedVendingMachines = unstable_cache(
   async () => {
-    const conn = await dbConnect();
-    if (!conn) return [];
-    const vms = await VendingMachine.find({}).lean();
-    return JSON.parse(JSON.stringify(vms)).map((vm: any) => ({
-      ...vm,
-      id: vm.id || vm._id,
-      name: vm.names,
-      location: vm.location,
-      hostel: vm.hostel,
-      building: vm.building,
-      image: vm.image,
-    }));
+    try {
+      await dbConnect();
+      const vms = await VendingMachine.find({}).lean();
+      return JSON.parse(JSON.stringify(vms)).map((vm: any) => ({
+        ...vm,
+        id: vm.id || vm._id,
+        name: vm.names,
+        location: vm.location,
+        hostel: vm.hostel,
+        building: vm.building,
+        image: vm.image,
+      }));
+    } catch (e) {
+      console.error("Failed to fetch vending machines:", e);
+      return [];
+    }
   },
   ["vending-list"],
   { revalidate: 300, tags: ["vending-machines"] }
@@ -50,15 +57,19 @@ export async function getVendingMachinesAction(timestamp?: number) {
 
 const getCachedVendingStatus = unstable_cache(
   async () => {
-    const conn = await dbConnect();
-    if (!conn) return [];
-    const vms = await VendingMachine.find({}).select("id names location type").lean();
-    return JSON.parse(JSON.stringify(vms)).map((vm: any) => ({
-      id: vm.id || vm._id,
-      name: vm.names,
-      location: vm.location,
-      type: vm.type,
-    }));
+    try {
+      await dbConnect();
+      const vms = await VendingMachine.find({}).select("id names location type").lean();
+      return JSON.parse(JSON.stringify(vms)).map((vm: any) => ({
+        id: vm.id || vm._id,
+        name: vm.names,
+        location: vm.location,
+        type: vm.type,
+      }));
+    } catch (e) {
+      console.error("Failed to fetch vending status:", e);
+      return [];
+    }
   },
   ["vending-status"],
   { revalidate: 30, tags: ["vending-status"] }
@@ -69,28 +80,36 @@ export async function getVendingMachinesStatus() {
 }
 
 export async function getVendingMachineById(id: string) {
-  const conn = await dbConnect();
-  if (!conn) return null;
+  try {
+    await dbConnect();
 
-  const vm = await VendingMachine.findOne({ id })
-    .populate("items.productId")
-    .lean();
+    const vm = await VendingMachine.findOne({ id })
+      .populate("items.productId")
+      .lean();
 
-  if (!vm) return null;
+    if (!vm) return null;
 
-  return JSON.parse(JSON.stringify(vm));
+    return JSON.parse(JSON.stringify(vm));
+  } catch (e) {
+    console.error("Failed to fetch vending machine:", e);
+    return null;
+  }
 }
 
 export async function getVendingMachineStock(id: string) {
-  const conn = await dbConnect();
-  if (!conn) return null;
-  const vm = await VendingMachine.findOne({ id }).select('items.productId items.quantity').lean();
+  try {
+    await dbConnect();
+    const vm = await VendingMachine.findOne({ id }).select('items.productId items.quantity').lean();
 
-  if (!vm) return null;
-  const items = vm.items || [];
+    if (!vm) return null;
+    const items = vm.items || [];
 
-  return items.map((item: any) => ({
-    productId: item.productId ? item.productId.toString() : null,
-    quantity: item.quantity
-  })).filter((item: any) => item.productId);
+    return items.map((item: any) => ({
+      productId: item.productId ? item.productId.toString() : null,
+      quantity: item.quantity
+    })).filter((item: any) => item.productId);
+  } catch (e) {
+    console.error("Failed to fetch stock:", e);
+    return null;
+  }
 }

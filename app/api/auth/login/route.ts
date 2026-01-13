@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
     }
     const token = signToken({ id: user._id, email: user.email });
     return NextResponse.json({ token }, { status: 200 });
-  } catch (err) {
+  } catch (err: any) {
     console.error("Login error:", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
   }
 }

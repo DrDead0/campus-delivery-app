@@ -31,7 +31,7 @@ const dbConnect = async () => {
   } catch (e) {
     cached.promise = null;
     console.error("Database connection failed:", e);
-    return null;
+    throw e;
   }
   return cached.conn;
 };
