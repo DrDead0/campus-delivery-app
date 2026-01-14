@@ -11,8 +11,11 @@ export async function PATCH(
     const { action, quantity } = await request.json();
     const conn = await dbConnect();
     if (!conn) {
+      const debugEnv = Object.keys(process.env).sort().join(", ");
       return NextResponse.json(
-        { error: "Database not configured" },
+        {
+          error: `Database not configured. Available Env Vars: ${debugEnv}`
+        },
         { status: 500 }
       );
     }

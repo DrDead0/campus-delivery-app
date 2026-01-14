@@ -6,7 +6,7 @@ if (!cached) {
 }
 
 const dbConnect = async () => {
-  const MONGO_URI = process.env.MONGO_URI;
+  const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
 
   if (cached.conn) return cached.conn;
   if (!MONGO_URI) {
