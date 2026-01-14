@@ -4,6 +4,10 @@ frontend:
     preBuild:
       commands:
         - npm ci
+        - echo "MONGO_URI=$MONGO_URI" >> .env.production
+        - echo "MONGODB_URI=$MONGODB_URI" >> .env.production
+        - echo "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" >> .env.production
+        - echo "NEXTAUTH_URL=$NEXTAUTH_URL" >> .env.production
     build:
       commands:
         - npm run build
