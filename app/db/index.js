@@ -11,6 +11,7 @@ const dbConnect = async () => {
   if (cached.conn) return cached.conn;
   if (!MONGO_URI) {
     console.error("MONGO_URI is not set in process.env");
+    console.error("Available environment variables:", Object.keys(process.env));
     return null;
   }
   if (!cached.promise) {
