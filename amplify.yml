@@ -4,8 +4,17 @@ frontend:
     preBuild:
       commands:
         - npm ci
+        - echo "ADMIN_USERNAME=$ADMIN_USERNAME" >> .env.production
+        - echo "ADMIN_PASSWORD=$ADMIN_PASSWORD" >> .env.production
         - echo "MONGO_URI=$MONGO_URI" >> .env.production
         - echo "MONGODB_URI=$MONGODB_URI" >> .env.production
+        - echo "jwt_token=$jwt_token" >> .env.production
+        - echo "RAZORPAY_KEY=$RAZORPAY_KEY" >> .env.production
+        - echo "RAZORPAY_KEY_SECRET=$RAZORPAY_KEY_SECRET" >> .env.production
+        - echo "Client_ID=$Client_ID" >> .env.production
+        - echo "Client_secret=$Client_secret" >> .env.production
+        - echo "SMTP_USER=$SMTP_USER" >> .env.production
+        - echo "SMTP_PASS=$SMTP_PASS" >> .env.production
         - echo "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" >> .env.production
         - echo "NEXTAUTH_URL=$NEXTAUTH_URL" >> .env.production
     build:
