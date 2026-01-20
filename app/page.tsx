@@ -29,13 +29,13 @@ export default function LandingPage() {
             letterSpacing: "-2px",
           }}
         >
-          Snack Hub
+          Unigo
         </h1>
       </div>
 
       <div className="flex-1 flex items-center justify-center">
         <p className="text-primary/80 text-xl font-medium">
-          put your slogn here
+          Your Ultimate Snack Hub
         </p>
       </div>
 

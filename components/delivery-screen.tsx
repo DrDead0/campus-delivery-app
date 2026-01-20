@@ -189,7 +189,7 @@ export function DeliveryScreen({
         <div className="relative z-10 flex justify-between items-start mt-12">
           <div className="flex-1">
             <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2 drop-shadow-sm">
-              {store?.name || "SnackHub"}
+              {store?.name || "Unigo"}
             </h1>
             <div className="flex items-center gap-2 text-gray-300 text-sm mb-1 font-medium">
               {store?.location && (

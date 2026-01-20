@@ -1,4 +1,4 @@
-"use client";
+import { useRouter } from "next/navigation";
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,19 @@ import {
   MapPin,
   Phone,
   ShoppingBag,
+  FileText,
+  HelpCircle,
+  MoreVertical,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { hostels } from "@/lib/data";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useCart } from "@/app/context/CartContext";
@@ -61,6 +71,7 @@ import {
 } from "@/components/ui/select";
 
 export function ProfileScreen() {
+  const router = useRouter();
   const { setSelectedHostel, setRoomNumber } = useCart();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,8 +85,13 @@ export function ProfileScreen() {
   });
   const [avatars, setAvatars] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [showOrders, setShowOrders] = useState(false);
+  const [orderTab, setOrderTab] = useState<"ongoing" | "history">("ongoing");
 
   useEffect(() => {
+    // Debug logging to check for infinite remounts
+    console.log("ProfileScreen mounted");
+
     const fetchAvatars = async () => {
       try {
         const res = await fetch("/api/avatars");
@@ -138,7 +154,7 @@ export function ProfileScreen() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setUser(null);
-    window.location.reload(); // Simple reload to clear state app-wide
+    router.push("/login"); // Redirect instead of reload
   };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -183,6 +199,133 @@ export function ProfileScreen() {
     );
   }
 
+  // Filter orders into ongoing and history
+  const ongoingStatuses = ["PENDING", "CONFIRMED", "PREPARING", "READY"];
+  const ongoingOrders = (user?.orders || []).filter((order) =>
+    ongoingStatuses.includes(order.status)
+  );
+  const historyOrders = (user?.orders || []).filter(
+    (order) =>
+      !["PENDING", "CONFIRMED", "PREPARING", "READY"].includes(order.status)
+  );
+
+  // OrderCard Component
+  const OrderCard = ({
+    order,
+    showCancel,
+  }: {
+    order: Order;
+    showCancel: boolean;
+  }) => {
+    // Status badge color logic
+    const getStatusColor = (status: string) => {
+      switch (status) {
+        case "PENDING":
+          return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20";
+        case "CONFIRMED":
+          return "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20";
+        case "PREPARING":
+          return "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20";
+        case "READY":
+          return "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20";
+        case "DELIVERED":
+          return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20";
+        case "CANCELLED":
+          return "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20";
+        default:
+          return "bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/20";
+      }
+    };
+
+    return (
+      <div className="border rounded-lg p-3 space-y-2 bg-card hover:bg-muted/30 transition-colors">
+        {/* Header Row */}
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-mono text-muted-foreground">
+                #{order._id.slice(-6)}
+              </span>
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full border font-medium ${getStatusColor(
+                  order.status
+                )}`}
+              >
+                {order.status}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="font-bold text-lg">₹{order.totalAmount}</p>
+          </div>
+        </div>
+
+        {/* Source Info */}
+        {order.items.length > 0 && (order.items[0] as any).sourceName && (
+          <div className="pt-2 border-t">
+            <p className="text-sm font-medium">
+              {(order.items[0] as any).sourceName}
+            </p>
+            {(order.items[0] as any).sourcePhone && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                <Phone className="w-3 h-3" />
+                {(order.items[0] as any).sourcePhone}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Items */}
+        <div className="text-xs text-muted-foreground">
+          {order.items.map((i) => `${i.quantity}× ${i.name}`).join(", ")}
+        </div>
+
+        {/* Address */}
+        {order.address && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground pt-2 border-t">
+            <MapPin className="w-3 h-3" />
+            {order.address}
+          </div>
+        )}
+
+        {/* Cancel Button */}
+        {showCancel && (
+          <div className="pt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full h-8 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-950 border-red-200 dark:border-red-800"
+              onClick={async () => {
+                if (!confirm("Cancel this order?")) return;
+                const { cancelOrderAction } = await import(
+                  "@/app/actions/order-actions"
+                );
+                const res = await cancelOrderAction(order._id);
+                if (res.ok) {
+                  router.refresh();
+                  // Force a re-fetch of data since router.refresh might not update client-side state
+                  // Or just reload for now, but safer:
+                  window.location.href = "/restaurant/profile";
+                } else {
+                  alert(res.error || "Failed to cancel");
+                }
+              }}
+            >
+              Cancel Order
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center space-y-6">
@@ -208,15 +351,39 @@ export function ProfileScreen() {
         <h1 className="text-2xl font-bold">My Profile</h1>
         <div className="flex items-center gap-2">
           <ModeToggle />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLogout}
-            className="text-muted-foreground hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 gap-2 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </Button>
+
+          {/* Options Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-2 rounded-full hover:bg-secondary/80 transition-colors">
+                <MoreVertical className="w-5 h-5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <Link href="/terms">
+                <DropdownMenuItem className="cursor-pointer">
+                  <FileText className="mr-2 h-4 w-4" />
+                  <span>Terms & Conditions</span>
+                </DropdownMenuItem>
+              </Link>
+              <Link href="/help">
+                <DropdownMenuItem className="cursor-pointer">
+                  <HelpCircle className="mr-2 h-4 w-4" />
+                  <span>Help & Support</span>
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -381,99 +548,95 @@ export function ProfileScreen() {
         </div>
       </div>
 
-      {/* Order History */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <ShoppingBag className="w-5 h-5" />
-          <h3 className="font-semibold">Order History</h3>
-        </div>
-
-        {user.orders && user.orders.length > 0 ? (
-          <div className="space-y-3">
-            {user.orders.map((order) => (
-              <Card key={order._id} className="overflow-hidden">
-                <CardHeader className="bg-muted/50 p-3 flex flex-row items-center justify-between space-y-0">
-                  <div className="text-xs font-mono text-muted-foreground">
-                    #{order._id.slice(-6)}
-                  </div>
-                  <Badge
-                    variant={
-                      order.status === "delivered" ? "default" : "secondary"
-                    }
-                  >
-                    {order.status}
-                  </Badge>
-                </CardHeader>
-                <CardContent className="p-3">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold">₹{order.totalAmount}</span>
-                      {(order.status === "PENDING" ||
-                        order.status === "CONFIRMED") && (
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="h-6 text-xs px-2"
-                          onClick={async () => {
-                            if (!confirm("Cancel this order?")) return;
-                            const { cancelOrderAction } = await import(
-                              "@/app/actions/order-actions"
-                            );
-                            const res = await cancelOrderAction(order._id);
-                            if (res.ok) {
-                              // Force reload or re-fetch
-                              window.location.reload();
-                            } else {
-                              alert(res.error || "Failed to cancel");
-                            }
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Display Source Info (Take from first item for now as orders are typically single source) */}
-                  {order.items.length > 0 &&
-                    (order.items[0] as any).sourceName && (
-                      <div className="mb-2">
-                        <p className="text-sm font-semibold">
-                          {(order.items[0] as any).sourceName}
-                        </p>
-                        {(order.items[0] as any).sourcePhone && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Phone className="w-3 h-3" />
-                            {(order.items[0] as any).sourcePhone}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                  <p className="text-xs text-muted-foreground truncate">
-                    {order.items
-                      .map((i) => `${i.quantity}x ${i.name}`)
-                      .join(", ")}
-                  </p>
-                  {order.address && (
-                    <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1 border-t pt-2">
-                      <MapPin className="w-3 h-3" />
-                      {order.address}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+      {/* Orders Section - Collapsible with Tabs */}
+      <Card className="overflow-hidden">
+        <CardHeader
+          className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => setShowOrders(!showOrders)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <ShoppingBag className="w-5 h-5 text-primary" />
+              <div>
+                <CardTitle className="text-lg">My Orders</CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {user.orders?.length || 0} total orders
+                </p>
+              </div>
+            </div>
+            <div className="text-muted-foreground">
+              {showOrders ? "▼" : "▶"}
+            </div>
           </div>
-        ) : (
-          <div className="text-center py-8 text-muted-foreground bg-muted/20 rounded-xl border-dashed border-2">
-            <p>No orders yet</p>
-          </div>
+        </CardHeader>
+
+        {showOrders && (
+          <CardContent className="p-0">
+            {/* Tabs */}
+            <div className="flex border-b">
+              <button
+                onClick={() => setOrderTab("ongoing")}
+                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                  orderTab === "ongoing"
+                    ? "border-b-2 border-primary text-primary bg-primary/5"
+                    : "text-muted-foreground hover:bg-muted/30"
+                }`}
+              >
+                Ongoing
+                {ongoingOrders.length > 0 && (
+                  <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-primary/20">
+                    {ongoingOrders.length}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setOrderTab("history")}
+                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                  orderTab === "history"
+                    ? "border-b-2 border-primary text-primary bg-primary/5"
+                    : "text-muted-foreground hover:bg-muted/30"
+                }`}
+              >
+                History
+                {historyOrders.length > 0 && (
+                  <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-muted">
+                    {historyOrders.length}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Orders List */}
+            <div className="p-4 space-y-3 max-h-[500px] overflow-y-auto">
+              {orderTab === "ongoing" ? (
+                ongoingOrders.length > 0 ? (
+                  ongoingOrders.map((order) => (
+                    <OrderCard
+                      key={order._id}
+                      order={order}
+                      showCancel={true}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <ShoppingBag className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p className="text-sm">No ongoing orders</p>
+                  </div>
+                )
+              ) : historyOrders.length > 0 ? (
+                historyOrders.map((order) => (
+                  <OrderCard key={order._id} order={order} showCancel={false} />
+                ))
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <ShoppingBag className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">No order history</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

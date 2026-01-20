@@ -97,13 +97,13 @@ export default function CartClient() {
   }, [selectedHostel, roomNumber, setSelectedHostel, setRoomNumber]);
 
   const itemTotal = totals.totalPrice;
-  const handlingFee = 20;
-  // GST = 18% of (Item Total + Handling)
+  const handlingFee = 5;
+  // GST = 2% of (Item Total + Handling)
   const taxableAmount = itemTotal + handlingFee;
-  const gst = Math.round(taxableAmount * 0.18);
+  const gst = Math.round(taxableAmount * 0.02);
 
   // Delivery Fee Logic (User: >100 Free, else ? Let's keep existing or simplified)
-  const deliveryFee = itemTotal > 100 ? 0 : 20;
+  const deliveryFee = itemTotal > 100 ? 0 : 5;
 
   // const grandTotal = itemTotal + handlingFee + gst + deliveryFee;
   const grandTotal = itemTotal + gst + deliveryFee;
@@ -176,7 +176,7 @@ export default function CartClient() {
               process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_placeholder",
             amount: grandTotal * 100,
             currency: "INR",
-            name: "SnackHub Campus Delivery",
+            name: "Unigo Campus Delivery",
             description: "Order Payment",
             order_id: result.razorpayOrder.id,
             handler: async function (response: any) {
