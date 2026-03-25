@@ -1,4 +1,4 @@
-# Campus Delivery App
+# Unigo
 
 A robust, multi-role food delivery platform tailored for university campuses. This application bridges the gap between students, campus stores, and administrators, offering a seamless ordering experience and powerful management tools.
 
@@ -53,7 +53,7 @@ Ensure you have the following installed:
 1.  **Clone the repository**:
     ```bash
     git clone <repository-url>
-    cd campus-delivery-app
+    cd unigo
     ```
 
 2.  **Install dependencies**:
